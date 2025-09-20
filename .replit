@@ -62,13 +62,13 @@ outputType = "webview"
 name = "Backend API"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "console"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd php-backend && php -S localhost:8000 -t public/"
+args = "cd php-backend && php -S 0.0.0.0:8000 -t public/"
 waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [[ports]]
 localPort = 3000
