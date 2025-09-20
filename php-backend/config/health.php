@@ -40,7 +40,7 @@ class HealthChecker
         // Check app mode consistency
         if (!defined('APP_MODE')) {
             $errors[] = "CRITICAL: APP_MODE not defined";
-        } elseif (!in_array(APP_MODE, ['demo', 'production'])) {
+        } elseif (!in_array(APP_MODE, ['demo', 'production', 'development'])) {
             $errors[] = "CRITICAL: Invalid APP_MODE value: " . APP_MODE;
         }
         

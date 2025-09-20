@@ -40,23 +40,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Backend API"
+args = "Frontend"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Frontend"
-
-[[workflows.workflow]]
-name = "Backend API"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd php-backend && php -S 0.0.0.0:8000 -t public/"
-waitForPort = 8000
+args = "Backend API"
 
 [[workflows.workflow]]
 name = "Frontend"
@@ -69,6 +57,18 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow]]
+name = "Backend API"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd php-backend && php -S localhost:8000 -t public/"
+waitForPort = 8000
 
 [[ports]]
 localPort = 3000
@@ -89,10 +89,6 @@ externalPort = 3002
 [[ports]]
 localPort = 8000
 externalPort = 8000
-
-[[ports]]
-localPort = 39743
-externalPort = 3003
 
 [agent]
 expertMode = true

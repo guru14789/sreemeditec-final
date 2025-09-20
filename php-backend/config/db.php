@@ -42,7 +42,7 @@ class DatabaseConnection
         try {
             // Check if MongoDB extension is loaded
             if (!extension_loaded('mongodb')) {
-                error_log("MongoDB extension not loaded - using fallback mode");
+                error_log("MongoDB extension not loaded - will attempt to connect later");
                 return false;
             }
             
@@ -50,7 +50,7 @@ class DatabaseConnection
             $client->selectDatabase('admin')->command(['ping' => 1]);
             return true;
         } catch (Exception $e) {
-            error_log("Database connection failed: " . $e->getMessage());
+            error_log("Database connection failed: " . $e->getMessage() . " - API will still run with limited functionality");
             return false;
         }
     }
