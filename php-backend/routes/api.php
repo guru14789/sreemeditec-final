@@ -164,15 +164,27 @@ function handleUserRegistration(): void
             'username' => $input['name'],
             'email' => $input['email'],
             'phone' => $input['phone'],
+            'address' => $input['address'] ?? '',
+            'password' => password_hash($input['password'], PASSWORD_DEFAULT),
             'role' => 'user'
         ];
         
-        $token = JWTHandler::generateToken($newUser);
-        $_SESSION['user'] = $newUser;
+        // Store in session for demo mode
+        if (!isset($_SESSION['demo_users'])) {
+            $_SESSION['demo_users'] = [];
+        }
+        $_SESSION['demo_users'][$input['email']] = $newUser;
+        
+        // Remove password from response
+        $userResponse = $newUser;
+        unset($userResponse['password']);
+        
+        $token = JWTHandler::generateToken($userResponse);
+        $_SESSION['user'] = $userResponse;
         
         sendJsonResponse([
             'success' => true,
-            'user' => $newUser,
+            'user' => $userResponse,
             'token' => $token,
             'message' => 'User registered successfully (Demo Mode - MongoDB not connected)'
         ]);
@@ -199,7 +211,7 @@ function handleUserLogin(): void
     
     // For demo purposes without MongoDB
     if (!extension_loaded('mongodb')) {
-        // Demo credentials
+        // Check demo admin credentials first
         if ($input['email'] === 'admin@sreemeditec.com' && $input['password'] === 'admin123') {
             $user = [
                 'id' => 'demo-admin-id',
@@ -210,7 +222,6 @@ function handleUserLogin(): void
             ];
             
             $token = JWTHandler::generateToken($user);
-            
             $_SESSION['user'] = $user;
             
             sendJsonResponse([
@@ -222,7 +233,29 @@ function handleUserLogin(): void
             return;
         }
         
-        sendJsonResponse(['success' => false, 'errors' => ['Invalid credentials. Try admin@sreemeditec.com / admin123']], 401);
+        // Check registered demo users
+        if (isset($_SESSION['demo_users'][$input['email']])) {
+            $storedUser = $_SESSION['demo_users'][$input['email']];
+            
+            if (password_verify($input['password'], $storedUser['password'])) {
+                // Remove password from response
+                $userResponse = $storedUser;
+                unset($userResponse['password']);
+                
+                $token = JWTHandler::generateToken($userResponse);
+                $_SESSION['user'] = $userResponse;
+                
+                sendJsonResponse([
+                    'success' => true,
+                    'user' => $userResponse,
+                    'token' => $token,
+                    'message' => 'Login successful (Demo Mode)'
+                ]);
+                return;
+            }
+        }
+        
+        sendJsonResponse(['success' => false, 'errors' => ['Invalid email or password']], 401);
         return;
     }
     
