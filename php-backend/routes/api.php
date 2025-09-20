@@ -146,7 +146,7 @@ function handleUserRegistration(): void
     
     // For demo purposes without MongoDB, simulate user registration
     if (!extension_loaded('mongodb')) {
-        $requiredFields = ['username', 'email', 'password', 'phone'];
+        $requiredFields = ['name', 'email', 'password', 'phone'];
         $errors = validateRequiredFields($input, $requiredFields);
         
         if (!empty($errors)) {
@@ -158,9 +158,22 @@ function handleUserRegistration(): void
         }
         
         // Simulate successful registration
+        $newUser = [
+            'id' => uniqid(),
+            'name' => $input['name'],
+            'username' => $input['name'],
+            'email' => $input['email'],
+            'phone' => $input['phone'],
+            'role' => 'user'
+        ];
+        
+        $token = JWTHandler::generateToken($newUser);
+        $_SESSION['user'] = $newUser;
+        
         sendJsonResponse([
             'success' => true,
-            'user_id' => uniqid(),
+            'user' => $newUser,
+            'token' => $token,
             'message' => 'User registered successfully (Demo Mode - MongoDB not connected)'
         ]);
         return;
@@ -190,6 +203,7 @@ function handleUserLogin(): void
         if ($input['email'] === 'admin@sreemeditec.com' && $input['password'] === 'admin123') {
             $user = [
                 'id' => 'demo-admin-id',
+                'name' => 'Admin',
                 'username' => 'Admin',
                 'email' => 'admin@sreemeditec.com',
                 'role' => 'admin'
