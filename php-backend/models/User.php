@@ -38,7 +38,7 @@ class User
             'email' => strtolower(trim($userData['email'])),
             'password' => $hashedPassword,
             'phone' => sanitizeInput($userData['phone']),
-            'address' => $userData['address'] ?? '',
+            'address' => $userData['address'] ?? '','',
             'profile_picture' => null,
             'role' => 'user',
             'email_verified' => false,
@@ -63,18 +63,31 @@ class User
     public function login(string $email, string $password): array
     {
         try {
+            error_log("Attempting login for: " . $email);
             $user = $this->collection->findOne(['email' => strtolower(trim($email))]);
             
             if (!$user) {
+                error_log("Login failed: User not found.");
+                return ['success' => false, 'errors' => ['Invalid credentials']];
+            }
+            
+            error_log("User found: " . print_r($user, true));
+
+            if (!isset($user->password)) {
+                error_log("Login failed: Password field does not exist for user.");
+                return ['success' => false, 'errors' => ['Login failed']];
+            }
+            
+            $isPasswordCorrect = password_verify($password, $user->password);
+            error_log("Password verification result: " . ($isPasswordCorrect ? 'true' : 'false'));
+
+            if (!$isPasswordCorrect) {
+                error_log("Login failed: Invalid password.");
                 return ['success' => false, 'errors' => ['Invalid credentials']];
             }
             
             if (!$user->is_active) {
                 return ['success' => false, 'errors' => ['Account is deactivated']];
-            }
-            
-            if (!password_verify($password, $user->password)) {
-                return ['success' => false, 'errors' => ['Invalid credentials']];
             }
             
             // Update last login
@@ -83,6 +96,7 @@ class User
                 ['$set' => ['last_login' => new UTCDateTime()]]
             );
             
+            error_log("Login successful for: " . $email);
             return [
                 'success' => true,
                 'user' => [
@@ -114,7 +128,7 @@ class User
                 'username' => $user->username,
                 'email' => $user->email,
                 'phone' => $user->phone,
-                'address' => $user->address ?? '',
+                'address' => $user->address ?? '','',
                 'role' => $user->role,
                 'profile_picture' => $user->profile_picture,
                 'email_verified' => $user->email_verified ?? false,
@@ -223,6 +237,22 @@ class User
         } catch (Exception $e) {
             error_log("Get all users error: " . $e->getMessage());
             return [];
+        }
+    }
+
+    public function deleteUser(string $userId): array
+    {
+        try {
+            $result = $this->collection->deleteOne(['_id' => new ObjectId($userId)]);
+
+            if ($result->getDeletedCount() > 0) {
+                return ['success' => true, 'message' => 'User deleted successfully'];
+            } else {
+                return ['success' => false, 'errors' => ['User not found']];
+            }
+        } catch (Exception $e) {
+            error_log("Delete user error: " . $e->getMessage());
+            return ['success' => false, 'errors' => ['User deletion failed']];
         }
     }
 }

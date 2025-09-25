@@ -146,6 +146,23 @@ class ApiClient {
     const response = await this.request('/users');
     return response;
   }
+
+  // Payment API
+  async createPaymentOrder(orderData) {
+    const response = await this.request('/payment/order', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+    return response;
+  }
+
+  async verifyPayment(paymentData) {
+    const response = await this.request('/payment/verify', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+    return response;
+  }
 }
 
 export const api = new ApiClient();

@@ -71,67 +71,117 @@ const Checkout = () => {
 
     setIsProcessing(true);
 
-    try {
-      // Simulate payment gateway processing
-      if (formData.paymentMethod === 'card') {
-        // Simulate Razorpay/Stripe payment
-        await new Promise(resolve => setTimeout(resolve, 3000));
+    if (formData.paymentMethod === 'card') {
+      await handleRazorpayPayment();
+    } else {
+      await processCashOnDelivery();
+    }
+  };
 
-        // Simulate payment success (90% success rate)
-        if (Math.random() < 0.9) {
-          const paymentId = 'pay_' + Math.random().toString(36).substr(2, 9);
-          await processPaymentSuccess(paymentId);
-        } else {
-          throw new Error('Payment failed');
-        }
-      } else {
-        // Cash on Delivery
-        await processCashOnDelivery();
-      }
+  const handleRazorpayPayment = async () => {
+    try {
+      const orderResponse = await api.createPaymentOrder({
+        amount: getCartTotal(),
+        currency: 'INR',
+      });
+
+      const options = {
+        key: 'YOUR_RAZORPAY_KEY_ID', // Replace with your Razorpay Key ID
+        amount: orderResponse.amount,
+        currency: orderResponse.currency,
+        name: 'Sreemeditec',
+        description: 'Medical Equipment Purchase',
+        order_id: orderResponse.order_id,
+        handler: async (response) => {
+          await processPaymentSuccess(response);
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        notes: {
+          address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
+        },
+        theme: {
+          color: '#3399cc',
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response){
+        toast({
+          title: "Payment failed",
+          description: response.error.description,
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+      });
+      rzp.open();
+
     } catch (error) {
+      console.error('Razorpay error:', error);
       toast({
         title: "Payment failed",
-        description: "There was an error processing your payment. Please try again.",
+        description: "Could not initiate Razorpay payment.",
         variant: "destructive",
       });
       setIsProcessing(false);
     }
   };
 
-  const processPaymentSuccess = async (paymentId) => {
+  const processPaymentSuccess = async (razorpayResponse) => {
     try {
+      const verificationResponse = await api.verifyPayment({
+        razorpay_order_id: razorpayResponse.razorpay_order_id,
+        razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+        razorpay_signature: razorpayResponse.razorpay_signature,
+      });
+
+      if (!verificationResponse.success) {
+        throw new Error('Payment verification failed');
+      }
+      
       const orderData = {
+        items: cartItems,
+        total_amount: getCartTotal(),
         shipping_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
         billing_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
         phone: formData.phone,
-        notes: `Payment ID: ${paymentId}, Customer: ${formData.firstName} ${formData.lastName}`,
+        notes: `Payment ID: ${razorpayResponse.razorpay_payment_id}, Customer: ${formData.firstName} ${formData.lastName}`,
         payment_method: formData.paymentMethod,
-        payment_id: paymentId
+        payment_id: razorpayResponse.razorpay_payment_id,
+        razorpay_order_id: razorpayResponse.razorpay_order_id
       };
 
       const response = await api.createOrder(orderData);
 
       if (response.success) {
         clearCart();
-
         toast({
           title: "Payment successful!",
           description: `Your order #${response.order_id} has been confirmed.`,
         });
-
         navigate(`/order-confirmation/${response.order_id}`);
       } else {
         throw new Error(response.error || 'Order creation failed');
       }
     } catch (error) {
       console.error('Order creation error:', error);
-      throw error;
+      toast({
+        title: "Payment Processing Error",
+        description: error.message || "There was an error processing your payment after completion. Please contact support.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
     }
   };
 
   const processCashOnDelivery = async () => {
     try {
       const orderData = {
+        items: cartItems,
+        total_amount: getCartTotal(),
         shipping_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
         billing_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
         phone: formData.phone,
@@ -143,19 +193,23 @@ const Checkout = () => {
 
       if (response.success) {
         clearCart();
-
         toast({
           title: "Order placed successfully!",
           description: `Your order #${response.order_id} has been confirmed.`,
         });
-
         navigate(`/order-confirmation/${response.order_id}`);
       } else {
         throw new Error(response.error || 'Order creation failed');
       }
     } catch (error) {
       console.error('Order creation error:', error);
-      throw error;
+      toast({
+        title: "Order Creation Error",
+        description: "There was an error creating your order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+        setIsProcessing(false);
     }
   };
 
