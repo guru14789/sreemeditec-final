@@ -38,7 +38,7 @@ class User
             'email' => strtolower(trim($userData['email'])),
             'password' => $hashedPassword,
             'phone' => sanitizeInput($userData['phone']),
-            'address' => $userData['address'] ?? '','',
+            'address' => sanitizeInput($userData['address'] ?? ''),
             'profile_picture' => null,
             'role' => 'user',
             'email_verified' => false,
@@ -104,6 +104,7 @@ class User
                     'username' => $user->username,
                     'email' => $user->email,
                     'phone' => $user->phone,
+                    'address' => $user->address ?? '',
                     'role' => $user->role,
                     'profile_picture' => $user->profile_picture
                 ]
@@ -128,7 +129,7 @@ class User
                 'username' => $user->username,
                 'email' => $user->email,
                 'phone' => $user->phone,
-                'address' => $user->address ?? '','',
+                'address' => $user->address ?? '',
                 'role' => $user->role,
                 'profile_picture' => $user->profile_picture,
                 'email_verified' => $user->email_verified ?? false,
