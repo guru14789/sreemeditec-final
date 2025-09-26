@@ -39,6 +39,10 @@ switch (true) {
         handleUpdateUserProfile();
         break;
         
+    case $route === '/user/change-password' && $method === 'PUT':
+        handleChangePassword();
+        break;
+        
     // Product routes
     case $route === '/products' && $method === 'GET':
         handleGetProducts();
@@ -1002,5 +1006,39 @@ function handleAdminSalesAnalytics(): void
     ];
     
     sendJsonResponse($salesData);
+}
+
+function handleChangePassword(): void
+{
+    $user = AuthMiddleware::requireAuth();
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$input) {
+        sendJsonResponse(['error' => 'Invalid JSON input'], 400);
+    }
+    
+    $requiredFields = ['currentPassword', 'newPassword'];
+    $errors = validateRequiredFields($input, $requiredFields);
+    
+    if (!empty($errors)) {
+        sendJsonResponse(['success' => false, 'errors' => $errors], 400);
+    }
+    
+    // For demo mode
+    if (!extension_loaded('mongodb')) {
+        // In demo mode, we can't actually change the password since it's session-based
+        // But we can simulate a successful password change
+        sendJsonResponse([
+            'success' => true,
+            'message' => 'Password changed successfully (Demo Mode)'
+        ]);
+        return;
+    }
+    
+    $userModel = new User();
+    $result = $userModel->changePassword($user['id'], $input['currentPassword'], $input['newPassword']);
+    
+    sendJsonResponse($result, $result['success'] ? 200 : 400);
 }
 ?>

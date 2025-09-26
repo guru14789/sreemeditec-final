@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        setUser(decoded.user || decoded);
+        setUser(decoded.data || decoded.user || decoded);
       } catch (error) {
         console.error('Invalid token:', error);
         api.removeToken();
@@ -72,13 +72,71 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await api.updateProfile(profileData);
+      if (response.success) {
+        // Update user in context with new data
+        setUser(prev => ({ ...prev, ...profileData }));
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been updated successfully.",
+        });
+        return { success: true };
+      } else {
+        toast({
+          title: "Update failed",
+          description: response.errors?.join(', ') || "Profile update failed.",
+          variant: "destructive",
+        });
+        return { success: false, error: response.errors?.join(', ') };
+      }
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { success: false, error: error.message };
+    }
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      const response = await api.changePassword(currentPassword, newPassword);
+      if (response.success) {
+        toast({
+          title: "Password changed",
+          description: "Your password has been changed successfully.",
+        });
+        return { success: true };
+      } else {
+        toast({
+          title: "Password change failed",
+          description: response.errors?.join(', ') || "Password change failed.",
+          variant: "destructive",
+        });
+        return { success: false, error: response.errors?.join(', ') };
+      }
+    } catch (error) {
+      toast({
+        title: "Password change failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     user,
     login,
     register,
     logout,
+    updateProfile,
+    changePassword,
     loading,
-    isAdmin: user ? user.isAdmin : false,
+    isAdmin: user ? user.role === 'admin' : false,
   };
 
   return (

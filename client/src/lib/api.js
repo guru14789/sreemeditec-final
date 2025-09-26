@@ -24,7 +24,7 @@ class ApiClient {
     const config = {
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { 'x-auth-token': token }),
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -77,6 +77,28 @@ class ApiClient {
 
   logout() {
     this.removeToken();
+  }
+
+  // Profile methods
+  async getProfile() {
+    const response = await this.request('/user/profile');
+    return response;
+  }
+
+  async updateProfile(userData) {
+    const response = await this.request('/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+    return response;
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    const response = await this.request('/user/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    return response;
   }
 
   // Orders API
@@ -149,7 +171,7 @@ class ApiClient {
 
   // Payment API
   async createPaymentOrder(orderData) {
-    const response = await this.request('/payment/order', {
+    const response = await this.request('/payment/create-order', {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
