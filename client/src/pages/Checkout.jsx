@@ -85,9 +85,13 @@ const Checkout = () => {
         currency: 'INR',
       });
 
+      if (!orderResponse.success) {
+        throw new Error(orderResponse.errors?.[0] || 'Failed to create payment order');
+      }
+
       const options = {
-        key: 'YOUR_RAZORPAY_KEY_ID', // Replace with your Razorpay Key ID
-        amount: orderResponse.amount,
+        key: orderResponse.key, // Get the key from backend response
+        amount: orderResponse.amount * 100, // Convert to paise for Razorpay
         currency: orderResponse.currency,
         name: 'Sreemeditec',
         description: 'Medical Equipment Purchase',
