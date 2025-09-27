@@ -3,7 +3,7 @@ run = "npm run dev"
 
 [nix]
 channel = "stable-25_05"
-packages = ["php84Extensions.mongodb", "mongodb", "php82Extensions.mongodb", "jq"]
+packages = ["php84Extensions.mongodb", "mongodb", "php82Extensions.mongodb", "jq", "postgresql"]
 
 [deployment]
 run = ["bash", "-c", "cd php-backend && php -S 0.0.0.0:8000 -t public/"]
