@@ -1,26 +1,28 @@
 <?php
-require_once __DIR__ . '/jwt.php';
+require_once __DIR__ . '/../config/firebase.php'; // Include the Firebase connection file
+
+use Kreait\Firebase\Exception\Auth\InvalidToken;
 
 class AuthMiddleware 
 {
     public static function authenticate(): ?array 
     {
-        // Check for JWT token in Authorization header first
-        $token = JWTHandler::getTokenFromHeader();
-        
-        if ($token) {
-            $validation = JWTHandler::validateToken($token);
-            if ($validation['valid']) {
-                return $validation['data'];
-            }
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        $idToken = str_replace('Bearer ', '', $authHeader);
+
+        if (empty($idToken)) {
+            return null; // No token provided
         }
         
-        // Fallback to session-based authentication
-        if (isset($_SESSION['user'])) {
-            return $_SESSION['user'];
+        try {
+            $verifiedIdToken = $GLOBALS['auth']->verifyIdToken($idToken);
+            return $verifiedIdToken->claims()->all();
+        } catch (InvalidToken $e) {
+            return null; // Token is invalid
+        } catch (Exception $e) {
+            error_log("Firebase Auth Error: " . $e->getMessage());
+            return null; // Other authentication errors
         }
-        
-        return null;
     }
     
     public static function requireAuth(): array 
@@ -38,7 +40,7 @@ class AuthMiddleware
     {
         $user = self::requireAuth();
         
-        if ($user['role'] !== 'admin') {
+        if (!isset($user['role']) || $user['role'] !== 'admin') {
             sendJsonResponse(['error' => 'Admin access required'], 403);
         }
         
@@ -49,7 +51,7 @@ class AuthMiddleware
     {
         $user = self::requireAuth();
         
-        if ($user['role'] !== $role) {
+        if (!isset($user['role']) || $user['role'] !== $role) {
             sendJsonResponse(['error' => "Role '$role' required"], 403);
         }
         
@@ -58,8 +60,7 @@ class AuthMiddleware
     
     public static function setUserContext(array $user): void 
     {
-        $_SESSION['user'] = $user;
-        
+        // In Firebase Auth, user context is derived from the token, not session
         // Set global user context for request
         $GLOBALS['current_user'] = $user;
     }

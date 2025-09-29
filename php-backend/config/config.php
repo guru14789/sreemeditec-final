@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Dotenv\Dotenv;
 
 // Load environment variables
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../sreemeditec-final-firebase-adminsdk-fbsvc-6184119249.json');
 $dotenv->load();
 
 // Error reporting

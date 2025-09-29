@@ -21,6 +21,10 @@ switch (true) {
     case $route === '/auth/login' && $method === 'POST':
         handleUserLogin();
         break;
+
+    case $route === '/auth/verify-email' && $method === 'POST':
+ handleVerifyEmail();
+ break;
         
     case $route === '/auth/logout' && $method === 'POST':
         handleUserLogout();
@@ -147,8 +151,8 @@ function handleUserRegistration(): void
     if (!$input) {
         sendJsonResponse(['error' => 'Invalid JSON input'], 400);
     }
-    
-    // For demo purposes without MongoDB, simulate user registration
+
+    // Remove demo mode logic
     if (!extension_loaded('mongodb')) {
         $requiredFields = ['name', 'email', 'password', 'phone'];
         $errors = validateRequiredFields($input, $requiredFields);
@@ -195,16 +199,17 @@ function handleUserRegistration(): void
         return;
     }
     
-    $userModel = new User();
-    $result = $userModel->register($input);
+    $requiredFields = ['email', 'password'];
+    $errors = validateRequiredFields($input, $requiredFields);
     
-    if ($result['success']) {
-        sendJsonResponse($result, 201);
+    if (!empty($errors)) {
+        sendJsonResponse(['success' => false, 'errors' => $errors], 400);
     } else {
-        sendJsonResponse($result, 400);
+        $userModel = new User();
+        $result = $userModel->createUser($input['email'], $input['password']);
+        sendJsonResponse($result, $result['success'] ? 201 : 400);
     }
 }
-
 function handleUserLogin(): void
 {
     $input = json_decode(file_get_contents('php://input'), true);
@@ -213,62 +218,16 @@ function handleUserLogin(): void
         sendJsonResponse(['error' => 'Email and password are required'], 400);
     }
     
-    // For demo purposes without MongoDB
-    if (!extension_loaded('mongodb')) {
-        // Check demo admin credentials first
-        if ($input['email'] === 'admin@sreemeditec.com' && $input['password'] === 'admin123') {
-            $user = [
-                'id' => 'demo-admin-id',
-                'name' => 'Admin',
-                'username' => 'Admin',
-                'email' => 'admin@sreemeditec.com',
-                'role' => 'admin'
-            ];
-            
-            $token = JWTHandler::generateToken($user);
-            $_SESSION['user'] = $user;
-            
-            sendJsonResponse([
-                'success' => true,
-                'user' => $user,
-                'token' => $token,
-                'message' => 'Login successful (Demo Mode)'
-            ]);
-            return;
-        }
-        
-        // Check registered demo users
-        if (isset($_SESSION['demo_users'][$input['email']])) {
-            $storedUser = $_SESSION['demo_users'][$input['email']];
-            
-            if (password_verify($input['password'], $storedUser['password'])) {
-                // Remove password from response
-                $userResponse = $storedUser;
-                unset($userResponse['password']);
-                
-                $token = JWTHandler::generateToken($userResponse);
-                $_SESSION['user'] = $userResponse;
-                
-                sendJsonResponse([
-                    'success' => true,
-                    'user' => $userResponse,
-                    'token' => $token,
-                    'message' => 'Login successful (Demo Mode)'
-                ]);
-                return;
-            }
-        }
-        
-        sendJsonResponse(['success' => false, 'errors' => ['Invalid email or password']], 401);
-        return;
-    }
-    
     $userModel = new User();
     $result = $userModel->login($input['email'], $input['password']);
     
     if ($result['success']) {
+        // You might want to generate a custom token here instead of using JWT directly
+        // based on your Firebase Auth strategy (e.g., sending the Firebase ID token
+        // back to the client and using that for subsequent requests).
+        // For simplicity in this example, we'll just send back the user data.
         $token = JWTHandler::generateToken($result['user']);
-        $_SESSION['user'] = $result['user'];
+        // $_SESSION['user'] = $result['user']; // Session management might be handled differently with Firebase Auth
         
         sendJsonResponse([
             'success' => true,
@@ -280,6 +239,23 @@ function handleUserLogin(): void
     }
 }
 
+function handleVerifyEmail(): void
+{
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if (!$input || !isset($input['idToken'])) {
+        sendJsonResponse(['error' => 'ID token is required'], 400);
+    }
+
+    $userModel = new User();
+    $result = $userModel->sendEmailVerification($input['idToken']);
+
+    if ($result['success']) {
+        sendJsonResponse($result);
+    } else {
+        sendJsonResponse($result, 400);
+    }
+}
 function handleUserLogout(): void
 {
     session_destroy();

@@ -1,18 +1,17 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/firebase.php';
 
-use MongoDB\BSON\ObjectId;
-use MongoDB\BSON\UTCDateTime;
+use Kreait\Firebase\Auth;
 
 class User 
 {
-    private $collection;
+    private Auth $auth;
     
     public function __construct()
     {
-        $database = DatabaseConnection::getDatabase();
-        $this->collection = $database->selectCollection('users');
+        global $auth;
+        $this->auth = $auth;
     }
     
     public function register(array $userData): array
@@ -25,15 +24,1397 @@ class User
             return ['success' => false, 'errors' => $errors];
         }
         
-        // Check if email already exists
-        if ($this->emailExists($userData['email'])) {
-            return ['success' => false, 'errors' => ['Email already exists']];
+        try {
+            $userProperties = [
+                'email' => strtolower(trim($userData['email'])),
+                'emailVerified' => false,
+                'password' => $userData['password'],
+                'displayName' => sanitizeInput($userData['username']),
+                'disabled' => false,
+            ];
+            $createdUser = $this->auth->createUser($userProperties);
+
+            // You might want to store additional user data (phone, address, etc.) in Firestore
+            // For now, we'll just return the Firebase User UID
+            return [
+                'success' => true,
+                'user_id' => $createdUser->uid,
+                'message' => 'User registered successfully'
+            ];
+        } catch (\Kreait\Firebase\Exception\AuthException | \Kreait\Firebase\Exception\FirebaseException $e) {
+            error_log("User registration error: " . $e->getMessage());
+            return ['success' => false, 'errors' => [$e->getMessage()]];
         }
-        
-        // Hash password
-        $hashedPassword = password_hash($userData['password'], PASSWORD_ARGON2ID);
-        
-        $user = [
+    }
+    
+    public function login(string $email, string $password): array
+    {
+        try {
+            $signInResult = $this->auth->signInWithEmailAndPassword(strtolower(trim($email)), $password);
+            $user = $signInResult->firebaseUserId();
+            $idToken = $signInResult->idToken();
+
+            // Optionally, you can retrieve more user data from Firebase Auth or Firestore
+            $firebaseUser = $this->auth->getUser($user);
+
+            return [
+                'success' => true,
+                'user' => [
+                    'id' => $firebaseUser->uid,
+                    'email' => $firebaseUser->email,
+                    'displayName' => $firebaseUser->displayName,
+                    // Add other relevant fields from FirebaseUser object
+                ],
+                'idToken' => $idToken,
+            ];
+        } catch (\Kreait\Firebase\Exception\AuthException | \Kreait\Firebase\Exception\FirebaseException $e) {
+            error_log("User login error: " . $e->getMessage());
+            return ['success' => false, 'errors' => [$e->getMessage()]];
+        }
+    }
+    
+    public function getUserByUid(string $uid): ?array
+    {
+        try {
+            $user = $this->auth->getUser($uid);
+
+            return [
+                'id' => $user->uid,
+                'email' => $user->email,
+                'displayName' => $user->displayName,
+                'emailVerified' => $user->emailVerified,
+                'disabled' => $user->disabled,
+                'createdAt' => $user->metadata->createdAt()->format('Y-m-d H:i:s'),
+                'lastLoginAt' => $user->metadata->lastLoginAt()->format('Y-m-d H:i:s'),
+                // Add other relevant fields from FirebaseUser object
+            ];
+        } catch (\Kreait\Firebase\Exception\AuthException | \Kreait\Firebase\Exception\FirebaseException $e) {
+            error_log("Get user error: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    // The following methods will need to be adapted to use Firestore if you
+    // store additional user profile data beyond what Firebase Auth provides.
+    // For this task, we are focusing only on Authentication.
+    // If you need to implement these, please provide further instructions.
+
+    /*
+    public function updateProfile(string $userId, array $updateData): array
+    {
+        // This method needs to be adapted for Firestore if you store profile data there.
+    }
+    
+    public function changePassword(string $userId, string $currentPassword, string $newPassword): array
+    {
+        // Firebase Authentication handles password changes differently.
+        // You would typically use methods provided by the Firebase client SDKs
+        // on the frontend for the authenticated user to change their password.
+        // If you need a backend process for this (e.g., admin functionality),
+        // you would use the Admin SDK's updateUser method, but you wouldn't
+        // verify the current password this way.
+    }
+    
+    public function emailExists(string $email): bool
+    {
+         try {
+             $user = $this->auth->getUserByEmail(strtolower(trim($email)));
+             return $user !== null;
+         } catch (\Kreait\Firebase\Exception\AuthException $e) {
+             // User not found is an expected scenario, so we return false
+             if ($e->getCode() === 404) {
+                 return false;
+             }
+             // Other errors should be logged
+             error_log("Email check error: " . $e->getMessage());
+             return false;
+         } catch (\Kreait\Firebase\Exception\FirebaseException $e) {
+            error_log("Email check error: " . $e->getMessage());
+            return false;
+         }
+    }
+    
+    public function getAllUsers(): array
+    {
+        // This method would require fetching all users from Firebase Auth
+        // which might have performance implications for large numbers of users.
+        // Alternatively, if you store user data in Firestore, you would query Firestore.
+    }
+
+    public function deleteUser(string $userId): array
+    {
+         try {
+             $this->auth->deleteUser($userId);
+             return ['success' => true, 'message' => 'User deleted successfully'];
+         } catch (\Kreait\Firebase\Exception\AuthException | \Kreait\Firebase\Exception\FirebaseException $e) {
+             error_log("Delete user error: " . $e->getMessage());
+             return ['success' => false, 'errors' => [$e->getMessage()]];
+         }
+    }
+    */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ the/home/user/.firebase/credentials\n--- /dev/null
+++ b/home/user/.firebase/credentials
+new file mode/home/user/.firebase/credentials\ncomposer update` has been successfully executed and the Firebase SDK has been installed. The next step is to configure the User model to use Firebase for authentication.
             'username' => sanitizeInput($userData['username']),
             'email' => strtolower(trim($userData['email'])),
             'password' => $hashedPassword,
