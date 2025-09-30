@@ -1,20 +1,7 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
-
-use Dotenv\Dotenv;
-
-// Load environment variables
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../../sreemeditec-final-firebase-adminsdk-fbsvc-6184119249.json');
-$dotenv->load();
-
 // Error reporting
-if ($_ENV['APP_DEBUG'] === 'true') {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Set timezone
 date_default_timezone_set('Asia/Kolkata');
@@ -22,33 +9,16 @@ date_default_timezone_set('Asia/Kolkata');
 // Define constants
 define('BASE_PATH', dirname(__DIR__));
 define('UPLOAD_PATH', BASE_PATH . '/uploads/');
-define('MAX_FILE_SIZE', (int)$_ENV['MAX_FILE_SIZE']);
-define('ALLOWED_FILE_TYPES', explode(',', $_ENV['ALLOWED_FILE_TYPES']));
-define('APP_MODE', $_ENV['APP_MODE'] ?? 'production');
-define('IS_DEMO_MODE', APP_MODE === 'demo');
-define('IS_PRODUCTION', ($_ENV['APP_ENV'] ?? 'production') === 'production');
-
-// Session configuration
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-ini_set('session.cookie_samesite', 'Strict');
-
-if ($_ENV['APP_ENV'] === 'production') {
-    ini_set('session.cookie_secure', 1);
-}
-
-// Start session
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // CORS configuration
 function setCorsHeaders() {
-    // Allow requests from your React frontend
+    // Don't run in CLI
+    if (php_sapi_name() === 'cli') return;
+
     $allowedOrigins = [
         'http://localhost:5173',
         'http://localhost:3000',
-        $_ENV['APP_URL'] ?? 'http://localhost:5000'
+        'http://localhost:5000' // A default fallback
     ];
     
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -82,7 +52,7 @@ function sendJsonResponse(array $data, int $statusCode = 200): void {
 function validateRequiredFields(array $data, array $requiredFields): array {
     $errors = [];
     foreach ($requiredFields as $field) {
-        if (!isset($data[$field]) || empty(trim($data[$field]))) {
+        if (!isset($data[$field]) || empty(trim((string)$data[$field]))) {
             $errors[] = "Field '$field' is required";
         }
     }

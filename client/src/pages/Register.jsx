@@ -217,11 +217,11 @@ const Register = () => {
                     className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                   />
                   <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                    I agree to the{' '}
+                    I agree to the 
                     <span className="text-teal-600 hover:text-teal-500 cursor-pointer">
                       Terms of Service
-                    </span>{' '}
-                    and{' '}
+                    </span>
+                    and 
                     <span className="text-teal-600 hover:text-teal-500 cursor-pointer">
                       Privacy Policy
                     </span>
@@ -239,7 +239,7 @@ const Register = () => {
 
               <div className="text-center">
                 <p className="text-sm text-gray-600">
-                  Already have an account?{' '}
+                  Already have an account? 
                   <Link to="/login" className="text-teal-600 hover:text-teal-500 font-medium">
                     Sign in here
                   </Link>
