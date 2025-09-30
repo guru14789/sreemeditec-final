@@ -38,8 +38,8 @@ class Order
                 'paymentMethod' => $orderData['payment_method'] ?? 'cod',
                 'paymentStatus' => 'pending',
                 'orderStatus' => 'pending',
-                'createdAt' => new \DateTime(),
-                'updatedAt' => new \DateTime()
+                'createdAt' => new \Google\Cloud\Core\Timestamp(new \DateTime()),
+                'updatedAt' => new \Google\Cloud\Core\Timestamp(new \DateTime())
             ]);
 
             return [
@@ -97,7 +97,7 @@ class Order
         try {
             $this->ordersCollection->document($orderId)->update([
                 ['path' => 'orderStatus', 'value' => $status],
-                ['path' => 'updatedAt', 'value' => new \DateTime()]
+                ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new \DateTime())]
             ]);
             return ['success' => true, 'message' => 'Order status updated successfully'];
         } catch (\Exception $e) {
@@ -111,7 +111,7 @@ class Order
         try {
             $updateData = [
                 ['path' => 'paymentStatus', 'value' => $status],
-                ['path' => 'updatedAt', 'value' => new \DateTime()]
+                ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new \DateTime())
             ];
 
             if ($status === 'completed') {

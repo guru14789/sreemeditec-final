@@ -30,11 +30,11 @@ class Cart
                         $productId => [
                             'productId' => $productId,
                             'quantity' => $quantity,
-                            'addedAt' => new \DateTime()
+                            'addedAt' => new \Google\Cloud\Core\Timestamp(new \DateTime())
                         ]
                     ],
-                    'createdAt' => new \DateTime(),
-                    'updatedAt' => new \DateTime()
+                    'createdAt' => new \Google\Cloud\Core\Timestamp(new \DateTime()),
+                    'updatedAt' => new \Google\Cloud\Core\Timestamp(new \DateTime())
                 ]);
             } else {
                 // Update existing cart
@@ -45,12 +45,12 @@ class Cart
                     $items[$productId] = [
                         'productId' => $productId,
                         'quantity' => $quantity,
-                        'addedAt' => new \DateTime()
+                        'addedAt' => new \Google\Cloud\Core\Timestamp(new \DateTime())
                     ];
                 }
                 $cartRef->update([
                     ['path' => 'items', 'value' => $items],
-                    ['path' => 'updatedAt', 'value' => new \DateTime()]
+                    ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new \DateTime())]
                 ]);
             }
             
@@ -126,7 +126,7 @@ class Cart
 
             $cartRef->update([
                 ['path' => 'items', 'value' => $items],
-                ['path' => 'updatedAt', 'value' => new \DateTime()]
+                ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new \DateTime())]
             ]);
 
             return ['success' => true, 'message' => 'Cart updated successfully'];

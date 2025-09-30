@@ -58,7 +58,8 @@ class Product
             return ['success' => false, 'errors' => $errors];
         }
 
-        $newProduct = $this->firestore->collection($this->collectionName)->newDocument([
+        $newProductRef = $this->firestore->collection($this->collectionName)->newDocument();
+        $newProductRef->set([
             'name' => \sanitizeInput($productData['name']),
             'description' => \sanitizeInput($productData['description']),
             'category' => \sanitizeInput($productData['category']),
@@ -67,9 +68,7 @@ class Product
             'stock' => (int)($productData['stock'] ?? 0),
         ]);
 
-        $newProduct->create();
-
-        return ['success' => true, 'product_id' => $newProduct->id()];
+        return ['success' => true, 'product_id' => $newProductRef->id()];
     }
 
     public function updateProduct(string $productId, array $updateData): array

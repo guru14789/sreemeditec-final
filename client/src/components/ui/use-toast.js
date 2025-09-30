@@ -98,6 +98,6 @@ export function useToast() {
 
   return {
     toast,
-    toasts: state.toasts,
+    toasts: state.toasts.map(({ dismiss, ...rest }) => rest),
   }
 }

@@ -37,13 +37,18 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      await api.login(email, password);
-      loadUser();
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      return { success: true };
+      const response = await api.login(email, password);
+      if (response.success && response.idToken) {
+        api.setToken(response.idToken);
+        const decoded = jwtDecode(response.idToken);
+        setUser(decoded.data || decoded.user || decoded);
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        return { success: true };
+      }
+      throw new Error(response.message || 'Login failed');
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -51,13 +56,18 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      await api.register(userData);
-      loadUser();
-      toast({
-        title: "Registration successful",
-        description: "Welcome to Sreemeditec!",
-      });
-      return { success: true };
+      const response = await api.register(userData);
+      if (response.success && response.idToken) {
+        api.setToken(response.idToken);
+        const decoded = jwtDecode(response.idToken);
+        setUser(decoded.data || decoded.user || decoded);
+        toast({
+          title: "Registration successful",
+          description: "Welcome to Sreemeditec!",
+        });
+        return { success: true };
+      }
+      throw new Error(response.message || 'Registration failed');
     } catch (error) {
       return { success: false, error: error.message };
     }

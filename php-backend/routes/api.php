@@ -17,6 +17,8 @@ if (str_starts_with($route, '/auth')) {
     require_once __DIR__ . '/cart.php';
 } elseif (str_starts_with($route, '/orders')) {
     require_once __DIR__ . '/order.php';
+} elseif (str_starts_with($route, '/user')) {
+    require_once __DIR__ . '/user.php';
 } else {
     sendJsonResponse(['error' => 'API endpoint not found'], 404);
 }

@@ -43,13 +43,17 @@ class User
                 'phone' => \sanitizeInput($userData['phone']),
                 'address' => \sanitizeInput($userData['address'] ?? ''),
                 'role' => 'user',
-                'createdAt' => new \DateTime()
+                'createdAt' => new \Google\Cloud\Core\Timestamp(new \DateTime())
             ]);
+
+            $signInResult = $this->auth->signInWithEmailAndPassword(strtolower(trim($userData['email'])), $userData['password']);
+            $idToken = $signInResult->idToken();
 
             return [
                 'success' => true,
                 'user_id' => $uid,
-                'message' => 'User registered successfully'
+                'message' => 'User registered successfully',
+                'idToken' => $idToken
             ];
         } catch (\Kreait\Firebase\Exception\Auth\EmailExists $e) {
             error_log("User registration error: Email already exists - " . $e->getMessage());
@@ -98,9 +102,11 @@ class User
     public function updateProfile(string $uid, array $updateData): array
     {
         try {
-            $this->usersCollection->document($uid)->update(array_map(function($field) {
-                return ['path' => $field['path'], 'value' => \sanitizeInput($field['value'])];
-            }, $updateData));
+            $updates = [];
+            foreach ($updateData as $key => $value) {
+                $updates[] = ['path' => $key, 'value' => \sanitizeInput($value)];
+            }
+            $this->usersCollection->document($uid)->update($updates);
             
             return ['success' => true, 'message' => 'Profile updated successfully'];
         } catch (\Exception $e) {
