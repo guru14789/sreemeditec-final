@@ -27,7 +27,7 @@ function handleGetCart(): void
     AuthMiddleware::handle();
     $user = $GLOBALS['user'];
     
-    $cartModel = new Cart();
+    $cartModel = new \Models\Cart();
     $result = $cartModel->getCart($user->uid);
     
     sendJsonResponse($result);
@@ -46,7 +46,7 @@ function handleAddToCart(): void
     
     $quantity = (int)($input['quantity'] ?? 1);
     
-    $cartModel = new Cart();
+    $cartModel = new \Models\Cart();
     $result = $cartModel->addToCart($user->uid, $input['product_id'], $quantity);
     
     sendJsonResponse($result, $result['success'] ? 201 : 400);
@@ -63,7 +63,7 @@ function handleUpdateCartItem(): void
         sendJsonResponse(['error' => 'Product ID and quantity are required'], 400);
     }
     
-    $cartModel = new Cart();
+    $cartModel = new \Models\Cart();
     $result = $cartModel->updateCartItem($user->uid, $input['product_id'], (int)$input['quantity']);
     
     sendJsonResponse($result, $result['success'] ? 200 : 400);
@@ -74,7 +74,7 @@ function handleClearCart(): void
     AuthMiddleware::handle();
     $user = $GLOBALS['user'];
     
-    $cartModel = new Cart();
+    $cartModel = new \Models\Cart();
     $result = $cartModel->clearCart($user->uid);
     
     sendJsonResponse($result);

@@ -111,8 +111,8 @@ class Order
         try {
             $updateData = [
                 ['path' => 'paymentStatus', 'value' => $status],
-                ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new \DateTime())
-            ];
+                ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new \DateTime())]
+            ]
 
             if ($status === 'completed') {
                 $updateData[] = ['path' => 'orderStatus', 'value' => 'confirmed'];

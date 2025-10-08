@@ -16,7 +16,7 @@ switch (true) {
 // Product handlers
 function handleGetProducts(): void
 {
-    $productModel = new Product();
+    $productModel = new \Models\Product();
     
     // Get filters from query parameters
     $filters = [];
@@ -44,7 +44,7 @@ function handleGetProducts(): void
 
 function handleGetProductById(string $productId): void
 {
-    $productModel = new Product();
+    $productModel = new \Models\Product();
     $product = $productModel->getProductById($productId);
     
     if ($product) {

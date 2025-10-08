@@ -1,66 +1,17 @@
 <?php
-// Error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Firebase
+define('FIREBASE_API_KEY', 'AIzaSyDGim4IkNRi9DKlr5KwmcRmagJUXLmVzfc');
+define('FIREBASE_AUTH_DOMAIN', 'sreemeditec-final.firebaseapp.com');
+define('FIREBASE_PROJECT_ID', 'sreemeditec-final');
+define('FIREBASE_STORAGE_BUCKET', 'sreemeditec-final.appspot.com');
+define('FIREBASE_MESSAGING_SENDER_ID', '236444837209');
+define('FIREBASE_APP_ID', '1:236444837209:web:16d3497b8b8c5566eb9848');
+define('FIREBASE_MEASUREMENT_ID', 'G-M9RDRTWRR6');
 
-// Set timezone
-date_default_timezone_set('Asia/Kolkata');
-
-// Define constants
-define('BASE_PATH', dirname(__DIR__));
-define('UPLOAD_PATH', BASE_PATH . '/uploads/');
-
-// CORS configuration
-function setCorsHeaders() {
-    // Don't run in CLI
-    if (php_sapi_name() === 'cli') return;
-
-    $allowedOrigins = [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'http://localhost:5000' // A default fallback
-    ];
-    
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    
-    if (in_array($origin, $allowedOrigins)) {
-        header("Access-Control-Allow-Origin: $origin");
-    }
-    
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-    header('Access-Control-Allow-Credentials: true');
-    
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
-        exit();
-    }
-}
-
-// Set CORS headers for all requests
-setCorsHeaders();
-
-// Helper function to send JSON response
-function sendJsonResponse(array $data, int $statusCode = 200): void {
-    http_response_code($statusCode);
-    header('Content-Type: application/json');
-    echo json_encode($data);
-    exit;
-}
-
-// Helper function to validate required fields
-function validateRequiredFields(array $data, array $requiredFields): array {
-    $errors = [];
-    foreach ($requiredFields as $field) {
-        if (!isset($data[$field]) || empty(trim((string)$data[$field]))) {
-            $errors[] = "Field '$field' is required";
-        }
-    }
-    return $errors;
-}
-
-// Helper function to sanitize input
-function sanitizeInput(string $input): string {
-    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
-}
+// Database
+define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
+define('DB_PORT', getenv('DB_PORT') ?: '3306');
+define('DB_NAME', getenv('DB_NAME') ?: 'sreemeditec');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASSWORD', getenv('DB_PASSWORD') ?: 'root');
 ?>

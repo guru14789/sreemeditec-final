@@ -203,6 +203,10 @@ export default defineConfig({
                 headers: {
                         'Cross-Origin-Embedder-Policy': 'credentialless',
                 },
+                hmr: {
+                  host: '5000-firebase-sreemeditec-final-1758940862923.cluster-aic6jbiihrhmyrqafasatvzbwe.cloudworkstations.dev',
+                  protocol: 'wss'
+                },
                 allowedHosts: true,
                 proxy: {
                         '/api': {

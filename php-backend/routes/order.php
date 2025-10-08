@@ -23,7 +23,7 @@ function handleGetUserOrders(): void
     AuthMiddleware::handle();
     $user = $GLOBALS['user'];
     
-    $orderModel = new Order();
+    $orderModel = new \Models\Order();
     $orders = $orderModel->getUserOrders($user->uid);
     
     sendJsonResponse([
@@ -38,7 +38,7 @@ function handleGetOrderById(string $orderId): void
     AuthMiddleware::handle();
     $user = $GLOBALS['user'];
     
-    $orderModel = new Order();
+    $orderModel = new \Models\Order();
     $order = $orderModel->getOrderById($orderId, $user->uid);
     
     if ($order) {
@@ -62,7 +62,7 @@ function handleCreateOrder(): void
         sendJsonResponse(['error' => 'Invalid JSON input'], 400);
     }
     
-    $orderModel = new Order();
+    $orderModel = new \Models\Order();
     $result = $orderModel->createOrder($user->uid, $input);
     
     sendJsonResponse($result, $result['success'] ? 201 : 400);

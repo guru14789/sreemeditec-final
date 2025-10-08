@@ -24,30 +24,42 @@ switch (true) {
 // Authentication handlers
 function handleUserRegistration(): void
 {
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    if (!$input) {
-        sendJsonResponse(['error' => 'Invalid JSON input'], 400);
-    }
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            sendJsonResponse(['success' => false, 'errors' => ['Invalid JSON input']], 400);
+            return;
+        }
 
-    $userModel = new User();
-    $result = $userModel->register($input);
-    
-    sendJsonResponse($result, $result['success'] ? 201 : 400);
+        $userModel = new \Models\User();
+        $result = $userModel->register($input);
+        
+        sendJsonResponse($result, $result['success'] ? 201 : 400);
+    } catch (\Exception $e) {
+        error_log("Unhandled error in handleUserRegistration: " . $e->getMessage());
+        sendJsonResponse(['success' => false, 'errors' => ['An unexpected server error occurred.']], 500);
+    }
 }
 
 function handleUserLogin(): void
 {
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    if (!$input || !isset($input['email']) || !isset($input['password'])) {
-        sendJsonResponse(['error' => 'Email and password are required'], 400);
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($input['email']) || !isset($input['password'])) {
+            sendJsonResponse(['success' => false, 'errors' => ['Email and password are required']], 400);
+            return;
+        }
+        
+        $userModel = new \Models\User();
+        $result = $userModel->login($input['email'], $input['password']);
+        
+        sendJsonResponse($result, $result['success'] ? 200 : 401);
+    } catch (\Exception $e) {
+        error_log("Unhandled error in handleUserLogin: " . $e->getMessage());
+        sendJsonResponse(['success' => false, 'errors' => ['An unexpected server error occurred.']], 500);
     }
-    
-    $userModel = new User();
-    $result = $userModel->login($input['email'], $input['password']);
-    
-    sendJsonResponse($result, $result['success'] ? 200 : 401);
 }
 
 function handleUserLogout(): void

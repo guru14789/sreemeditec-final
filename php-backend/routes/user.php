@@ -39,7 +39,7 @@ function handleUpdateUserProfile(): void
         sendJsonResponse(['error' => 'Invalid JSON input'], 400);
     }
     
-    $userModel = new User();
+    $userModel = new \Models\User();
     $result = $userModel->updateProfile($user->uid, $input);
     
     sendJsonResponse($result, $result['success'] ? 200 : 400);
@@ -56,7 +56,7 @@ function handleChangeUserPassword(): void
         sendJsonResponse(['error' => 'New password is required'], 400);
     }
     
-    $userModel = new User();
+    $userModel = new \Models\User();
     $result = $userModel->changePassword($user->uid, $input['newPassword']);
     
     sendJsonResponse($result, $result['success'] ? 200 : 400);
