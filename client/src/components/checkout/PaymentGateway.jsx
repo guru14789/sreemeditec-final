@@ -24,21 +24,85 @@ const PaymentGateway = ({ amount, onSuccess, onError, paymentMethod }) => {
     }));
   };
 
-  const simulateRazorpayPayment = () => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulate 90% success rate
-        if (Math.random() < 0.9) {
-          const paymentId = 'razorpay_' + Math.random().toString(36).substr(2, 12);
-          resolve({
-            razorpay_payment_id: paymentId,
-            razorpay_order_id: 'order_' + Math.random().toString(36).substr(2, 12),
-            razorpay_signature: 'signature_' + Math.random().toString(36).substr(2, 16)
-          });
-        } else {
-          reject(new Error('Payment failed'));
+  const initiateRazorpayPayment = async (orderId, totalAmount) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('idToken')}`
+          },
+          body: JSON.stringify({
+            order_id: orderId,
+            amount: totalAmount
+          })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          reject(new Error(data.errors?.[0] || 'Failed to create Razorpay order'));
+          return;
         }
-      }, 3000);
+
+        const options = {
+          key: data.razorpay_key_id,
+          amount: data.amount * 100,
+          currency: data.currency,
+          name: 'Sree Meditec',
+          description: 'Medical Equipment Purchase',
+          order_id: data.razorpay_order_id,
+          handler: async function (response) {
+            try {
+              const verifyResponse = await fetch('/api/payment/verify', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem('idToken')}`
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  auto_create_shipment: true
+                })
+              });
+
+              const verifyData = await verifyResponse.json();
+
+              if (verifyData.success) {
+                resolve({
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                  shipment: verifyData.shipment
+                });
+              } else {
+                reject(new Error('Payment verification failed'));
+              }
+            } catch (error) {
+              reject(error);
+            }
+          },
+          prefill: {
+            name: '',
+            email: '',
+            contact: ''
+          },
+          theme: {
+            color: '#0d9488'
+          }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+          reject(new Error(response.error.description || 'Payment failed'));
+        });
+        rzp.open();
+      } catch (error) {
+        reject(error);
+      }
     });
   };
 
@@ -81,11 +145,24 @@ const PaymentGateway = ({ amount, onSuccess, onError, paymentMethod }) => {
       let paymentResult;
       
       if (paymentMethod === 'razorpay') {
-        paymentResult = await simulateRazorpayPayment();
+        const orderId = sessionStorage.getItem('current_order_id');
+        if (!orderId) {
+          throw new Error('No order ID found. Please try again.');
+        }
+        
+        paymentResult = await initiateRazorpayPayment(orderId, amount);
         onSuccess({
           paymentMethod: 'razorpay',
           paymentId: paymentResult.razorpay_payment_id,
-          orderId: paymentResult.razorpay_order_id
+          orderId: paymentResult.razorpay_order_id,
+          shipment: paymentResult.shipment
+        });
+        
+        toast({
+          title: "Payment successful!",
+          description: paymentResult.shipment 
+            ? "Your payment has been processed and shipment has been created!" 
+            : "Your payment has been processed successfully.",
         });
       } else if (paymentMethod === 'stripe' || paymentMethod === 'card') {
         paymentResult = await simulateStripePayment();
@@ -94,12 +171,12 @@ const PaymentGateway = ({ amount, onSuccess, onError, paymentMethod }) => {
           paymentId: paymentResult.id,
           status: paymentResult.status
         });
+        
+        toast({
+          title: "Payment successful!",
+          description: "Your payment has been processed successfully.",
+        });
       }
-
-      toast({
-        title: "Payment successful!",
-        description: "Your payment has been processed successfully.",
-      });
 
     } catch (error) {
       onError(error);

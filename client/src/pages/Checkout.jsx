@@ -80,35 +80,60 @@ const Checkout = () => {
 
   const handleRazorpayPayment = async () => {
     try {
-      const orderResponse = await api.createPaymentOrder({
-        amount: getCartTotal(),
-        currency: 'INR',
-      });
+      const orderData = {
+        items: cartItems,
+        total_amount: getCartTotal(),
+        shipping_address: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.zipCode,
+          phone: formData.phone
+        },
+        billing_address: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.zipCode,
+          phone: formData.phone
+        },
+        payment_method: 'razorpay'
+      };
+
+      const orderResponse = await api.createOrder(orderData);
 
       if (!orderResponse.success) {
-        throw new Error(orderResponse.errors?.[0] || 'Failed to create payment order');
+        throw new Error(orderResponse.errors?.[0] || 'Failed to create order');
+      }
+
+      const paymentOrderResponse = await api.createPaymentOrder({
+        order_id: orderResponse.order_id,
+        amount: getCartTotal()
+      });
+
+      if (!paymentOrderResponse.success) {
+        throw new Error(paymentOrderResponse.errors?.[0] || 'Failed to create payment order');
       }
 
       const options = {
-        key: orderResponse.key, // Get the key from backend response
-        amount: orderResponse.amount * 100, // Convert to paise for Razorpay
-        currency: orderResponse.currency,
+        key: paymentOrderResponse.razorpay_key_id,
+        amount: paymentOrderResponse.amount * 100,
+        currency: paymentOrderResponse.currency,
         name: 'Sreemeditec',
         description: 'Medical Equipment Purchase',
-        order_id: orderResponse.order_id,
+        order_id: paymentOrderResponse.razorpay_order_id,
         handler: async (response) => {
-          await processPaymentSuccess(response);
+          await processPaymentSuccess(response, orderResponse.order_id);
         },
         prefill: {
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
           contact: formData.phone,
         },
-        notes: {
-          address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        },
         theme: {
-          color: '#3399cc',
+          color: '#0d9488',
         },
       };
 
@@ -127,54 +152,43 @@ const Checkout = () => {
       console.error('Razorpay error:', error);
       toast({
         title: "Payment failed",
-        description: "Could not initiate Razorpay payment.",
+        description: error.message || "Could not initiate Razorpay payment.",
         variant: "destructive",
       });
       setIsProcessing(false);
     }
   };
 
-  const processPaymentSuccess = async (razorpayResponse) => {
+  const processPaymentSuccess = async (razorpayResponse, orderId) => {
     try {
       const verificationResponse = await api.verifyPayment({
         razorpay_order_id: razorpayResponse.razorpay_order_id,
         razorpay_payment_id: razorpayResponse.razorpay_payment_id,
         razorpay_signature: razorpayResponse.razorpay_signature,
+        auto_create_shipment: true
       });
 
       if (!verificationResponse.success) {
         throw new Error('Payment verification failed');
       }
+
+      clearCart();
       
-      const orderData = {
-        items: cartItems,
-        total_amount: getCartTotal(),
-        shipping_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        billing_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        phone: formData.phone,
-        notes: `Payment ID: ${razorpayResponse.razorpay_payment_id}, Customer: ${formData.firstName} ${formData.lastName}`,
-        payment_method: formData.paymentMethod,
-        payment_id: razorpayResponse.razorpay_payment_id,
-        razorpay_order_id: razorpayResponse.razorpay_order_id
-      };
-
-      const response = await api.createOrder(orderData);
-
-      if (response.success) {
-        clearCart();
-        toast({
-          title: "Payment successful!",
-          description: `Your order #${response.order_id} has been confirmed.`,
-        });
-        navigate(`/order-confirmation/${response.order_id}`);
-      } else {
-        throw new Error(response.error || 'Order creation failed');
-      }
+      const successMessage = verificationResponse.shipment 
+        ? `Your order #${orderId} has been confirmed and shipment has been created! AWB: ${verificationResponse.shipment.awb_number}`
+        : `Your order #${orderId} has been confirmed.`;
+      
+      toast({
+        title: "Payment successful!",
+        description: successMessage,
+      });
+      
+      navigate(`/order-confirmation/${orderId}`);
     } catch (error) {
-      console.error('Order creation error:', error);
+      console.error('Payment verification error:', error);
       toast({
         title: "Payment Processing Error",
-        description: error.message || "There was an error processing your payment after completion. Please contact support.",
+        description: error.message || "There was an error verifying your payment. Please contact support.",
         variant: "destructive",
       });
       setIsProcessing(false);
@@ -186,10 +200,22 @@ const Checkout = () => {
       const orderData = {
         items: cartItems,
         total_amount: getCartTotal(),
-        shipping_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        billing_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        phone: formData.phone,
-        notes: `Cash on Delivery, Customer: ${formData.firstName} ${formData.lastName}`,
+        shipping_address: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.zipCode,
+          phone: formData.phone
+        },
+        billing_address: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.zipCode,
+          phone: formData.phone
+        },
         payment_method: 'cod'
       };
 

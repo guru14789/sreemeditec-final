@@ -185,6 +185,30 @@ class ApiClient {
     });
     return response;
   }
+
+  // Shipment API
+  async createShipment(shipmentData) {
+    const response = await this.request('/shipment/create', {
+      method: 'POST',
+      body: JSON.stringify(shipmentData),
+    });
+    return response;
+  }
+
+  async trackShipment(awbNumber) {
+    const response = await this.request(`/shipment/track/${awbNumber}`);
+    return response;
+  }
+
+  async getShipmentByOrder(orderId) {
+    const response = await this.request(`/shipment/order/${orderId}`);
+    return response;
+  }
+
+  async getUserShipments() {
+    const response = await this.request('/shipments');
+    return response;
+  }
 }
 
 export const api = new ApiClient();
