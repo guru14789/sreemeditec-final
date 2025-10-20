@@ -9,6 +9,7 @@ This project is a comprehensive e-commerce backend system for Sree Meditec, a me
 - Installed all npm dependencies for React frontend
 - Configured Firebase service account credentials securely via environment variables
 - Configured DTDC API key securely via environment variables
+- Configured Razorpay payment credentials (key ID, secret, webhook secret) securely via environment variables
 
 ## Performance Optimizations
 - **Firebase/Firestore Fast Fetching**: Optimized Firestore REST client with:
@@ -17,6 +18,13 @@ This project is a comprehensive e-commerce backend system for Sree Meditec, a me
   - TCP keep-alive for reduced connection overhead
   - Reduced connection timeout (5s) and request timeout (10s)
   - These optimizations significantly reduce latency and improve data fetching speed
+
+- **Admin Dashboard Query Optimization**: Dramatically improved admin dashboard performance by:
+  - Eliminating N+1 query problem in `getAllOrders()` method
+  - Reduced database queries from hundreds of individual calls to just 4 batch queries
+  - Added `getUsersByIds()` method to fetch only referenced users (not all users)
+  - Implemented targeted batch fetching for orders, users, payments, and shipments
+  - Result: Admin dashboard now loads significantly faster with minimal database overhead
 
 ## DTDC Courier Integration Enhancements
 - Fixed critical bug in shipment tracking query handling
@@ -29,6 +37,10 @@ This project is a comprehensive e-commerce backend system for Sree Meditec, a me
   - Label generation
   - Order cancellation
 - All endpoints properly validated and error-handled
+
+## Bug Fixes
+- Fixed undefined `$route` variable in admin route handlers by passing it as a parameter to `handleUpdateOrderStatus()`
+- Fixed admin dashboard performance issue by optimizing database queries
 
 # User Preferences
 
