@@ -175,4 +175,31 @@ class User
             return [];
         }
     }
+
+    public function getUsersByIds(array $userIds): array
+    {
+        try {
+            if (empty($userIds)) {
+                return [];
+            }
+
+            $users = [];
+            
+            // Firestore doesn't support batched document reads directly,
+            // but we can fetch individual documents in a loop (still better than N queries scattered across the code)
+            foreach ($userIds as $userId) {
+                $userDoc = $this->usersCollection->document($userId)->snapshot();
+                if ($userDoc->exists()) {
+                    $userData = $userDoc->data();
+                    $userData['uid'] = $userId;
+                    $users[$userId] = $userData;
+                }
+            }
+            
+            return $users;
+        } catch (\Exception $e) {
+            error_log("Get users by IDs error: " . $e->getMessage());
+            return [];
+        }
+    }
 }

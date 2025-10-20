@@ -223,16 +223,10 @@ class Order
                 }
             }
             
-            // STEP 2: Batch fetch all users (single query instead of N queries)
+            // STEP 2: Batch fetch only referenced users (targeted fetch instead of full table scan)
             $usersCache = [];
             if (!empty($userIds)) {
-                $allUsers = $userModel->getAllUsers();
-                foreach ($allUsers as $user) {
-                    $uid = $user['uid'] ?? $user['id'] ?? null;
-                    if ($uid) {
-                        $usersCache[$uid] = $user;
-                    }
-                }
+                $usersCache = $userModel->getUsersByIds(array_keys($userIds));
             }
             
             // Add user info to orders
