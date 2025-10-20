@@ -2,6 +2,34 @@
 
 This project is a comprehensive e-commerce backend system for Sree Meditec, a medical equipment company. It provides a production-ready, modular, secure, and scalable solution with features like user authentication, product management, order processing, Razorpay payment integration, DTDC courier integration, automated shipment creation, and an admin dashboard. The system aims to offer a complete e-commerce experience for medical equipment sales, including detailed product information, streamlined checkout, and robust administrative tools.
 
+# Recent Changes (October 20, 2025)
+
+## Project Import & Setup
+- Successfully migrated project to Replit environment
+- Installed all npm dependencies for React frontend
+- Configured Firebase service account credentials securely via environment variables
+- Configured DTDC API key securely via environment variables
+
+## Performance Optimizations
+- **Firebase/Firestore Fast Fetching**: Optimized Firestore REST client with:
+  - Connection pooling using persistent cURL handles
+  - Gzip compression for faster data transfer
+  - TCP keep-alive for reduced connection overhead
+  - Reduced connection timeout (5s) and request timeout (10s)
+  - These optimizations significantly reduce latency and improve data fetching speed
+
+## DTDC Courier Integration Enhancements
+- Fixed critical bug in shipment tracking query handling
+- Added missing API endpoints:
+  - `/api/shipment/label/{referenceNumber}` - Generate shipping labels
+  - `/api/shipment/cancel/{referenceNumber}` - Cancel shipments
+- Complete DTDC/Shipsy API integration with:
+  - Shipment creation (softdata upload)
+  - Real-time tracking
+  - Label generation
+  - Order cancellation
+- All endpoints properly validated and error-handled
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
