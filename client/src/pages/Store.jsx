@@ -26,21 +26,31 @@ const Store = () => {
       setError(null);
       const response = await api.getProducts();
       if (response.success && response.products) {
-        setProducts(response.products);
-        setFilteredProducts(response.products);
+        const normalizedProducts = response.products.map(product => ({
+          ...product,
+          rating: product.rating || 4.5,
+          reviews: product.reviews || product.reviews_count || 0,
+          originalPrice: product.originalPrice || product.original_price || null
+        }));
+        setProducts([...normalizedProducts]);
+        setFilteredProducts([...normalizedProducts]);
       } else {
         setError('Failed to load products');
+        setProducts([]);
+        setFilteredProducts([]);
       }
     } catch (err) {
       console.error('Error fetching products:', err);
       setError(err.message || 'Failed to load products');
+      setProducts([]);
+      setFilteredProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let filtered = products;
+    let filtered = [...products];
 
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(product => product.category === selectedCategory);
@@ -54,16 +64,16 @@ const Store = () => {
 
     switch (sortBy) {
       case 'price-low':
-        filtered = [...filtered].sort((a, b) => a.price - b.price);
+        filtered = filtered.sort((a, b) => a.price - b.price);
         break;
       case 'price-high':
-        filtered = [...filtered].sort((a, b) => b.price - a.price);
+        filtered = filtered.sort((a, b) => b.price - a.price);
         break;
       case 'rating':
-        filtered = [...filtered].sort((a, b) => b.rating - a.rating);
+        filtered = filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'name':
-        filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+        filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       default:
         break;
