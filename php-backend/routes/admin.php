@@ -23,7 +23,7 @@ switch (true) {
         break;
         
     case str_starts_with($route, '/admin/orders/') && $method === 'PUT':
-        handleUpdateOrderStatus();
+        handleUpdateOrderStatus($route);
         break;
 }
 
@@ -238,7 +238,7 @@ function handleGetAllOrders(): void
     }
 }
 
-function handleUpdateOrderStatus(): void
+function handleUpdateOrderStatus(string $route): void
 {
     AuthMiddleware::handle();
     $user = $GLOBALS['user'];

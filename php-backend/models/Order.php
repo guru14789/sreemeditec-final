@@ -204,23 +204,49 @@ class Order
             
             $orders = [];
             $orderIds = [];
+            $userIds = [];
             
+            // STEP 1: Fetch all orders (single query)
             $documents = $this->ordersCollection->documents();
             foreach ($documents as $document) {
                 if ($document->exists()) {
                     $order = $document->data();
                     $orderId = $order['orderId'] ?? $document->id();
-                    $user = $userModel->getUserById($order['userId']);
-                    $order['username'] = $user ? $user['username'] : 'Unknown User';
-                    $order['customer_name'] = $user ? $user['name'] : 'Unknown';
-                    $order['email'] = $user ? $user['email'] : '';
-                    $order['phone'] = $user ? $user['phone'] : '';
+                    $userId = $order['userId'] ?? null;
+                    
+                    if ($userId) {
+                        $userIds[$userId] = true;
+                    }
+                    
                     $orderIds[] = $orderId;
                     $orders[$orderId] = $order;
                 }
             }
             
-            // Fetch payment information for all orders
+            // STEP 2: Batch fetch all users (single query instead of N queries)
+            $usersCache = [];
+            if (!empty($userIds)) {
+                $allUsers = $userModel->getAllUsers();
+                foreach ($allUsers as $user) {
+                    $uid = $user['uid'] ?? $user['id'] ?? null;
+                    if ($uid) {
+                        $usersCache[$uid] = $user;
+                    }
+                }
+            }
+            
+            // Add user info to orders
+            foreach ($orders as $orderId => &$order) {
+                $userId = $order['userId'] ?? null;
+                $user = $userId && isset($usersCache[$userId]) ? $usersCache[$userId] : null;
+                $order['username'] = $user ? ($user['username'] ?? $user['name']) : 'Unknown User';
+                $order['customer_name'] = $user ? $user['name'] : 'Unknown';
+                $order['email'] = $user ? $user['email'] : '';
+                $order['phone'] = $user ? $user['phone'] : '';
+            }
+            unset($order);
+            
+            // STEP 3: Fetch payment and shipment info (2 queries instead of N)
             $paymentQuery = $paymentsCollection->documents();
             foreach ($paymentQuery as $paymentDoc) {
                 if ($paymentDoc->exists()) {
@@ -232,7 +258,6 @@ class Order
                 }
             }
             
-            // Fetch shipment information for all orders
             $shipmentQuery = $shipmentsCollection->documents();
             foreach ($shipmentQuery as $shipmentDoc) {
                 if ($shipmentDoc->exists()) {
