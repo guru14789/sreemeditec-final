@@ -216,9 +216,9 @@ class Shipment
             $documents = $query->documents();
             
             // If not found by referenceNumber, try orderId (for backward compatibility)
-            $documents = $documents->isEmpty() ? 
-                $this->shipmentsCollection->where('orderId', '=', $referenceNumber)->documents() : 
-                $documents;
+            if (empty($documents)) {
+                $documents = $this->shipmentsCollection->where('orderId', '=', $referenceNumber)->documents();
+            }
             
             foreach ($documents as $document) {
                 if ($document->exists()) {
@@ -358,9 +358,9 @@ class Shipment
             $documents = $query->documents();
             
             // If not found by referenceNumber, try orderId (for backward compatibility)
-            $documents = $documents->isEmpty() ? 
-                $this->shipmentsCollection->where('orderId', '=', $referenceNumber)->documents() : 
-                $documents;
+            if (empty($documents)) {
+                $documents = $this->shipmentsCollection->where('orderId', '=', $referenceNumber)->documents();
+            }
             
             foreach ($documents as $document) {
                 if ($document->exists()) {
