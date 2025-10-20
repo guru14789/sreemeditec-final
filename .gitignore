@@ -1,0 +1,37 @@
+data/
+.local/
+php-backend/config/*.json
+
+# Credentials documentation (contains sensitive info)
+CREDENTIALS.md
+SECURITY_ALERT.md
+
+# Environment files (exclude actual secrets, keep examples)
+.env
+.env.local
+.env.*.local
+php-backend/.env
+client/.env
+!.env.example
+!**/.env.example
+
+# Firebase service account (exclude actual, keep example)
+php-backend/config/*-firebase-adminsdk-*.json
+!php-backend/config/firebase-service-account.json.example
+!php-backend/config/sreemeditec-final-firebase-adminsdk-fbsvc-6184119249.json
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# IDE (allow VS Code configs to be shared)
+.idea/
+
+# Logs
+*.log
+logs/
+/tmp/
+php-backend/config/sreemeditec-final-firebase-adminsdk-fbsvc-6184119249.json

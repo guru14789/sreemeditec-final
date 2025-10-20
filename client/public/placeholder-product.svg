@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#e5e7eb"/>
+  <g fill="#9ca3af" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif">
+    <text x="150" y="100" font-size="16" font-weight="500">Product Image</text>
+    <text x="150" y="125" font-size="12">Medical Equipment</text>
+  </g>
+</svg>

@@ -1,0 +1,107 @@
+Customer Consignment Tracking
+get /api/customer/integration/consignment/track
+to fetch shipment tracking for client
+
+API Key (api-key)
+REQUEST
+QUERY-STRING PARAMETERS
+* reference_number
+string
+AEF12578
+Reference number
+
+Examples: AEF12578
+REQUEST BODY
+application/json
+EXAMPLE
+SCHEMA
+Single line description
+: any
+REQUEST HEADERS
+* api-key
+string
+f129dec8511c5eeb857f0e4e2effb6
+Customer API Key for Authentication of format WRjbnd2biB2d252a3ZubHd2dm5yc0FDIHNudmp4bm52dnhudm52c
+
+Examples: f129dec8511c5eeb857f0e4e2effb6
+API Server
+https://app.shipsy.in
+Authentication
+Required (None Applied)
+RESPONSE
+EXAMPLE
+SCHEMA
+application/json
+object
+Single line description
+Customer Tracking Consignment Response
+
+{
+reference_number*: string
+Reference number/ AWB number of consignment
+
+service_type_id*: string
+Service type id of consignment
+
+attempt_count: integer
+Attempt Count
+
+status*: string
+Status of Consignment
+
+delivery_kyc_type: string
+Delivery KYC Type
+
+delivery_kyc_number: string
+Delivery KYC Number
+
+is_cod*: boolean
+Consignment has Cash-On-Delivery Payment Mode
+
+cod_amount: integer
+Cash-On-Delivery Amount to be collected for the consignment
+
+hub_code: string
+Manifest Hub Code of the Consignment
+
+creation_date*: integer
+Creation Date-Time of the Consignment in Epoch Milliseconds
+
+weight: integer
+Weight of consignment
+
+receiver_name: string
+Receiver Name of consignment
+
+events*: [{
+Tracking History of the Consignment
+
+type: string
+Tracking Status of the Event
+
+event_time: integer
+Time of the Event in Epoch Milliseconds
+
+hub_name: string
+Hub at which event occurs
+
+hub_code: string
+Hub code at which event occurs
+
+failure_reason: string
+Failure Reason in case pickup or delivery failed
+
+customer_update: string
+Event description for customer
+
+signature_image: string
+Image url of picture taken at pick up/delivery
+
+pop_image: string
+Image url of picture taken at pick up/delivery
+
+pop_signature_image: string
+Image url of picture taken at pick up/delivery
+
+}]
+}

@@ -1,0 +1,774 @@
+
+Filter
+↩
+Consignment Integration (Customer)
+POST
+Customer Cancel Order
+GET
+Customer Consignment Tracking
+GET
+Label Generation (Stream)
+POST
+Customer Softdata Upload
+Customer Integration
+POST
+Create Cross Border Softdata Consignment
+Consignment Integration (Customer)
+API's for Consignment Integration (Customer)
+
+Customer Cancel Order
+post /api/customer/integration/consignment/cancel
+Customer Cancellation API
+
+API Key (api-key)
+REQUEST
+REQUEST BODY
+application/json
+EXAMPLE
+SCHEMA
+object
+Single line description
+Cancel Order Request
+
+{
+AWBNo: [string]
+Reference Number List
+
+customerCode: string
+Customer Code
+
+}
+REQUEST HEADERS
+* api-key
+string
+f129dec8511c5eeb857f0e4e2effb6
+Customer API Key for Authentication of format WRjbnd2biB2d252a3ZubHd2dm5yc0FDIHNudmp4bm52dnhudm52c
+
+Examples: f129dec8511c5eeb857f0e4e2effb6
+API Server
+https://app.shipsy.in
+Authentication
+Required (None Applied)
+RESPONSE
+EXAMPLE
+SCHEMA
+application/json
+object
+Single line description
+Cancel Order Response
+
+{
+status: string
+success: boolean
+successConsignments: [{
+List of consignments successfully cancelled
+
+reference_number: string
+Reference number of consignment
+
+success: boolean
+Cancellation result as true/false
+
+}]
+failures: [{
+In case of errors failures will be present
+
+reference_number: string
+Reference number of consignment
+
+message: string
+Error meesage
+
+reason: string
+Error reason
+
+code: string
+Error code
+
+}]
+}
+Customer Consignment Tracking
+get /api/customer/integration/consignment/track
+to fetch shipment tracking for client
+
+API Key (api-key)
+REQUEST
+QUERY-STRING PARAMETERS
+* reference_number
+string
+AEF12578
+Reference number
+
+Examples: AEF12578
+REQUEST BODY
+application/json
+EXAMPLE
+SCHEMA
+
+REQUEST HEADERS
+* api-key
+string
+f129dec8511c5eeb857f0e4e2effb6
+Customer API Key for Authentication of format WRjbnd2biB2d252a3ZubHd2dm5yc0FDIHNudmp4bm52dnhudm52c
+
+Examples: f129dec8511c5eeb857f0e4e2effb6
+API Server
+https://app.shipsy.in
+Authentication
+Required (None Applied)
+RESPONSE
+EXAMPLE
+SCHEMA
+application/json
+object
+Single line description
+Customer Tracking Consignment Response
+
+{
+reference_number*: string
+Reference number/ AWB number of consignment
+
+service_type_id*: string
+Service type id of consignment
+
+attempt_count: integer
+Attempt Count
+
+status*: string
+Status of Consignment
+
+delivery_kyc_type: string
+Delivery KYC Type
+
+delivery_kyc_number: string
+Delivery KYC Number
+
+is_cod*: boolean
+Consignment has Cash-On-Delivery Payment Mode
+
+cod_amount: integer
+Cash-On-Delivery Amount to be collected for the consignment
+
+hub_code: string
+Manifest Hub Code of the Consignment
+
+creation_date*: integer
+Creation Date-Time of the Consignment in Epoch Milliseconds
+
+weight: integer
+Weight of consignment
+
+receiver_name: string
+Receiver Name of consignment
+
+events*: [{
+Tracking History of the Consignment
+
+type: string
+Tracking Status of the Event
+
+event_time: integer
+Time of the Event in Epoch Milliseconds
+
+hub_name: string
+Hub at which event occurs
+
+hub_code: string
+Hub code at which event occurs
+
+failure_reason: string
+Failure Reason in case pickup or delivery failed
+
+customer_update: string
+Event description for customer
+
+signature_image: string
+Image url of picture taken at pick up/delivery
+
+pop_image: string
+Image url of picture taken at pick up/delivery
+
+pop_signature_image: string
+Image url of picture taken at pick up/delivery
+
+}]
+}
+Label Generation (Stream)
+get /api/customer/integration/consignment/shippinglabel/stream
+API to download label for a consignment
+
+API Key (api-key)
+REQUEST
+QUERY-STRING PARAMETERS
+* reference_number
+string
+AEF12578
+Reference number/AWB number of Consignment
+
+Examples: AEF12578
+REQUEST BODY
+application/json
+EXAMPLE
+SCHEMA
+Single line description
+: any
+REQUEST HEADERS
+* api-key
+string
+f129dec8511c5eeb857f0e4e2effb6
+Customer API Key for Authentication of format WRjbnd2biB2d252a3ZubHd2dm5yc0FDIHNudmp4bm52dnhudm52c
+
+Examples: f129dec8511c5eeb857f0e4e2effb6
+API Server
+https://app.shipsy.in
+Authentication
+Required (None Applied)
+RESPONSE
+EXAMPLE
+SCHEMA
+application/pdf
+Single line description
+: byte
+Customer Softdata Upload
+post /api/customer/integration/consignment/upload/softdata/v2
+to upload softdata for customer
+
+API Key (api-key)
+REQUEST
+QUERY-STRING PARAMETERS
+REQUEST BODY
+application/json
+EXAMPLE
+SCHEMA
+object
+Single line description
+Customer Softdata Upload Request
+
+{
+action_type: string
+Manifestation process handling. Allowed types ('delivery', 'inscan', 'Single_pickup')
+
+consignment_type: string
+Consignment Type. Allowed types ('forward', 'reverse')
+
+movement_type: string
+Movement Type of the consignment. Allowed: 'forward', 'rto')
+
+eway_bill: string
+Eway Bill Number of Consignment
+
+load_type*: string
+load type for the consignment. Allowed: ('DOCUMENT', 'NON-DOCUMENT')
+
+description: string
+description of the consignment
+
+customer_code: string
+Customer code defined in Shipsy
+
+reference_number: string
+Unique number of a consignment in Shipsy
+
+service_type_id*: string
+Service type ID of consignment defined in Shipsy
+
+cod_favor_of: string
+Details of the entity in whose name collection is to be made
+
+cod_collection_mode: string
+COD collection mode. Allowed (“cash”, “cheque”, “dd”)
+
+dimension_unit: string
+Unit for dimensions of consignment. default is 'cm'
+
+length: string
+Length of consignment (cm)
+
+width: string
+Width of consignment (cm)
+
+height: string
+Height of consignment (cm)
+
+weight_unit: string
+Unit for consignment weight. default is 'kg'
+
+weight: string
+Weight of consignment
+
+volume: string
+Volume of consignmentt. default is 'kg'
+
+volume_unit: string
+Unit for consignment volume. default is 'cm3'
+
+cod_amount: string
+COD amount to be collected for the consignment under consideration
+
+invoice_amount: string
+Invoice Amount
+
+invoice_number: string
+Invoice Number of Consignment
+
+invoice_date: string
+Invoice Date of Consignment
+
+declared_value: integer
+Declared value of consignment
+
+declared_value_without_tax: integer
+Base value of consignment
+
+product_code: string
+Product code for predefined product categories. Each product with a given product code will have its predefined dimensions and weight defined in Shipsy system. Remark: Load_type should be NON-DOCUMENT for this. If present, dimension and weight values will be overwritten with the product code mapping. No need to provide dimension_unit, length, width, height, weight_unit, weight.
+
+num_pieces: integer
+Number of pieces of Consignment
+
+customer_reference_number: string
+Customer reference number
+
+is_risk_surcharge_applicable: boolean
+Risk surcharge applicable
+
+courier_partner: string
+Courier Partner
+
+courier_account: string
+Courier Account Name
+
+courier_partner_reference_number: string
+Courier Partner Reference number/AWB Number of the consignment
+
+hub_code*: string
+Hub code responsible for making the delivery of the consignment
+
+hsn_code: string
+HSN Code of the order
+
+tax_details: [{
+Tax details of the Consignment
+
+cgst: string
+Central GST Value. Optional
+
+sgst: string
+State GST Value. Optional
+
+igst: string
+Integrated GST Value. Optional
+
+total_tax: string
+Total Tax applicable. Optional
+
+sender_gstin: string
+GST number of the sender. Optional
+
+}]
+delivery_time_slot_start: string
+Delivery Slot Start Time. Acceptable format: YYYY-MM-DD HH:mm:ss
+
+delivery_time_slot_end: string
+Delivery Slot End Time. Acceptable format: YYYY-MM-DD HH:mm:ss
+
+scheduled_at: string
+The delivery date on which the CN would be planned for. Acceptable format: 'YYYY-MM-DD'
+
+service_time: integer
+Time taken for completing the delivery (in Seconds)
+
+reference_image_url: string
+Reference Image of the Piece
+
+origin_details*: {
+Add Consignment Address
+
+address_hub_code: string
+Hub code to fetch the address details from Shipsy system. Remark: If address_hub_code is defined then address details are fetched from this and passed values with overwrite these. In case of incorrect value and error will be shown
+
+name*: string
+Name of consignor (in case of origin) or Consignee (in case of destination)
+
+phone*: string
+Phone number of Consignor (in case of origin) or Consignee (in case of destination)
+
+alternate_phone: string
+Alternate Phone number of Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+address_line_1*: string
+Address details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+address_line_2: string
+Address details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+pincode*: string
+Pincode details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+district: string
+District of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+city: string
+City of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+state: string
+State of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+country: string
+Country of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+latitude: string
+Latitude of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+longitude: string
+Longitude of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+}
+destination_details*: {
+Add Consignment Address
+
+address_hub_code: string
+Hub code to fetch the address details from Shipsy system. Remark: If address_hub_code is defined then address details are fetched from this and passed values with overwrite these. In case of incorrect value and error will be shown
+
+name*: string
+Name of consignor (in case of origin) or Consignee (in case of destination)
+
+phone*: string
+Phone number of Consignor (in case of origin) or Consignee (in case of destination)
+
+alternate_phone: string
+Alternate Phone number of Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+address_line_1*: string
+Address details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+address_line_2: string
+Address details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+pincode*: string
+Pincode details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+district: string
+District of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+city: string
+City of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+state: string
+State of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+country: string
+Country of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+latitude: string
+Latitude of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+longitude: string
+Longitude of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+}
+nodes: [{
+Details for hub nodes present in journey
+
+courier_partner*: string
+Courier partner for leg of journey originating from that node
+
+courier_accounts*: string
+Account name for that leg of journey
+
+declared_value*: string
+Declared Value of the Consignment
+
+mode*: string
+The mode for transport, Acceptable values: shipment, bag
+
+node_type*: string
+Leg of the CN journey, Acceptable values: FM, MM, LM
+
+}]
+return_details: {
+Add Consignment Address
+
+address_hub_code: string
+Hub code to fetch the address details from Shipsy system. Remark: If address_hub_code is defined then address details are fetched from this and passed values with overwrite these. In case of incorrect value and error will be shown
+
+name*: string
+Name of consignor (in case of origin) or Consignee (in case of destination)
+
+phone*: string
+Phone number of Consignor (in case of origin) or Consignee (in case of destination)
+
+alternate_phone: string
+Alternate Phone number of Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+address_line_1*: string
+Address details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+address_line_2: string
+Address details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+pincode*: string
+Pincode details of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+district: string
+District of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+city: string
+City of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+state: string
+State of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+country: string
+Country of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+latitude: string
+Latitude of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+longitude: string
+Longitude of the Consignor (in case of origin) or Consignee (in case of destination). Optional
+
+}
+pieces_detail*: [{
+Consignment Piece Details
+
+description: string
+Piece Description of Consignment Piece. Optional
+
+declared_value: string
+Declared value of Consignment Piece. Required in pieces_details for NON-DOCUMENT
+
+volume: string
+Volume of consignment
+
+weight: string
+Weight of consignment piece (kg). Required in pieces_details for NON-DOCUMENT
+
+height: string
+Height of consignment piece (cm). Required in pieces_details for NON-DOCUMENT
+
+length: string
+Length of consignment piece (cm). Required in pieces_details for NON-DOCUMENT
+
+width: string
+Width of consignment piece (cm). Required in pieces_details for NON-DOCUMENT
+
+weight_unit: string
+Unit of Weight. Optional
+
+dimension_unit: string
+Unit for dimensions of peice. default is 'cm'
+
+volume_unit: string
+Unit of volume
+
+piece_product_code: string
+Product Code of the piece
+
+reference_image_url: string
+Reference Image of the Piece
+
+}]
+}
+REQUEST HEADERS
+* api-key
+string
+f129dec8511c5eeb857f0e4e2effb6
+Customer API Key for Authentication of format WRjbnd2biB2d252a3ZubHd2dm5yc0FDIHNudmp4bm52dnhudm52c
+
+Examples: f129dec8511c5eeb857f0e4e2effb6
+API Server
+https://app.shipsy.in
+Authentication
+Required (None Applied)
+RESPONSE
+EXAMPLE
+SCHEMA
+application/json
+object
+Single line description
+Success Softdata Response
+
+{
+success: boolean
+reference_number: string
+Reference number of consignment
+
+courier_partner: string
+Courier partner of consignment
+
+courier_account: string
+Courier account of consignment
+
+courier_partner_reference_number: string
+Courier Partner Reference Number
+
+customer_reference_number: string
+Customer reference numbe
+
+}
+Customer Integration
+API's for Customer Integration
+
+Create Cross Border Softdata Consignment
+post /api/customer/integration/consignment/cb/intl/softdata
+API for creating cross-border consignments with soft data
+
+API Key (api-key)
+REQUEST
+REQUEST BODY
+application/json
+EXAMPLE
+SCHEMA
+object
+Single line description
+Cross Border Softdata Create Request
+
+{
+consignments*: [{
+Array of consignment objects
+
+customer_seller_code: string
+Customer’s Seller Code
+
+origin_details: {
+Origin address details
+
+}
+destination_details: {
+Destination address details
+
+}
+billing_details: {
+Billing address details
+
+}
+load_type: string
+Type of consignment
+
+length: integer
+Length of consignment (cm)
+
+width: integer
+Width of consignment (cm)
+
+height: integer
+Height of consignment (cm)
+
+weight: integer
+Weight of consignment (kg)
+
+service_type_id: string
+Service type ID
+
+commodity_name: string
+Name of the commodity
+
+declared_value: integer
+Declared value of consignment
+
+currency: string
+Currency of declared value
+
+num_pieces: integer
+Number of pieces in consignment
+
+eway_bill_number: string
+Eway bill number
+
+invoice_number: string
+Invoice number
+
+invoice_date: string
+Invoice date
+
+invoice_type: string
+Type of invoice
+
+customer_reference_number: string
+Customer reference number
+
+delivery_terms: string
+Delivery terms
+
+inco_terms: string
+Inco terms
+
+shipment_purpose: string
+Purpose of shipment
+
+notes: string
+Delivery notes or instructions
+
+eori_number: string
+EORI number
+
+iori_number: string
+IORI number
+
+freight_cost: integer
+Freight cost
+
+freight_cost_currency: string
+Currency of freight cost
+
+against_bond_lut: string
+Indicates if booked against indemnity bond
+
+ecom_shipment: boolean
+Indicates if booked as an E-commerce shipment
+
+meis: boolean
+Indicates if MEIS scheme is applicable
+
+export_invoice_date: string
+Date of export invoice
+
+fob_value: integer
+FOB value
+
+fob_value_currency: string
+Currency of FOB value
+
+total_gst_paid_amount: integer
+Total GST paid amount
+
+total_gst_paid_currency: string
+Currency of total GST paid amount
+
+consignor_company_name: string
+Consignor company name
+
+consignor_gstn: string
+Consignor GSTN
+
+consignee_company_name: string
+Consignee company name
+
+consignee_gstn: string
+Consignee GSTN
+
+}]
+}
+REQUEST HEADERS
+* api-key
+string
+Client Integration API Key for Authentication should be of format b6de1ea7fcf393f4djh14567bbb12e
+
+API Server
+https://app.shipsy.in
+Authentication
+Required (None Applied)
+RESPONSE
+EXAMPLE
+SCHEMA
+application/json
+object
+Single line description
+Cross Border Softdata Create Response
+
+{
+status: string
+Status of the operation
+
+}

@@ -1,0 +1,19 @@
+{
+  "files.associations": {
+    "*.php": "php"
+  },
+  "php.validate.executablePath": "/usr/bin/php",
+  "editor.formatOnSave": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/vendor": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/dist": true,
+    "**/.git": true
+  }
+}

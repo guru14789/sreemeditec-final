@@ -1,0 +1,51 @@
+❌ Request failed: 401 Unauthorized {error: 'Invalid or expired token', details: "The value 'eyJhbGciOiJSUzI...' is not a verified ID token:\n- The token is expired\n"}
+console.error @ order-history:129
+request @ api.js:122
+await in request
+getOrders @ api.js:192
+loadOrders @ OrderHistory.jsx:30
+(anonymous) @ OrderHistory.jsx:23
+commitHookEffectListMount @ chunk-TH7NCS4R.js?v=af24edf4:16963
+invokePassiveEffectMountInDEV @ chunk-TH7NCS4R.js?v=af24edf4:18374
+invokeEffectsInDev @ chunk-TH7NCS4R.js?v=af24edf4:19754
+commitDoubleInvokeEffectsInDEV @ chunk-TH7NCS4R.js?v=af24edf4:19739
+flushPassiveEffectsImpl @ chunk-TH7NCS4R.js?v=af24edf4:19556
+flushPassiveEffects @ chunk-TH7NCS4R.js?v=af24edf4:19500
+performSyncWorkOnRoot @ chunk-TH7NCS4R.js?v=af24edf4:18921
+flushSyncCallbacks @ chunk-TH7NCS4R.js?v=af24edf4:9166
+commitRootImpl @ chunk-TH7NCS4R.js?v=af24edf4:19485
+commitRoot @ chunk-TH7NCS4R.js?v=af24edf4:19330
+finishConcurrentRender @ chunk-TH7NCS4R.js?v=af24edf4:18858
+performConcurrentWorkOnRoot @ chunk-TH7NCS4R.js?v=af24edf4:18768
+workLoop @ chunk-TH7NCS4R.js?v=af24edf4:197
+flushWork @ chunk-TH7NCS4R.js?v=af24edf4:176
+performWorkUntilDeadline @ chunk-TH7NCS4R.js?v=af24edf4:384Understand this error
+order-history:129 💥 API request error: Error: Invalid or expired token
+    at ApiClient.request (api.js:123:15)
+    at async ApiClient.getOrders (api.js:192:22)
+    at async loadOrders (OrderHistory.jsx:30:24)
+console.error @ order-history:129
+request @ api.js:128
+await in request
+getOrders @ api.js:192
+loadOrders @ OrderHistory.jsx:30
+(anonymous) @ OrderHistory.jsx:23
+commitHookEffectListMount @ chunk-TH7NCS4R.js?v=af24edf4:16963
+invokePassiveEffectMountInDEV @ chunk-TH7NCS4R.js?v=af24edf4:18374
+invokeEffectsInDev @ chunk-TH7NCS4R.js?v=af24edf4:19754
+commitDoubleInvokeEffectsInDEV @ chunk-TH7NCS4R.js?v=af24edf4:19739
+flushPassiveEffectsImpl @ chunk-TH7NCS4R.js?v=af24edf4:19556
+flushPassiveEffects @ chunk-TH7NCS4R.js?v=af24edf4:19500
+performSyncWorkOnRoot @ chunk-TH7NCS4R.js?v=af24edf4:18921
+flushSyncCallbacks @ chunk-TH7NCS4R.js?v=af24edf4:9166
+commitRootImpl @ chunk-TH7NCS4R.js?v=af24edf4:19485
+commitRoot @ chunk-TH7NCS4R.js?v=af24edf4:19330
+finishConcurrentRender @ chunk-TH7NCS4R.js?v=af24edf4:18858
+performConcurrentWorkOnRoot @ chunk-TH7NCS4R.js?v=af24edf4:18768
+workLoop @ chunk-TH7NCS4R.js?v=af24edf4:197
+flushWork @ chunk-TH7NCS4R.js?v=af24edf4:176
+performWorkUntilDeadline @ chunk-TH7NCS4R.js?v=af24edf4:384Understand this error
+order-history:129 Failed to load orders: Error: Invalid or expired token
+    at ApiClient.request (api.js:123:15)
+    at async ApiClient.getOrders (api.js:192:22)
+    at async loadOrders (OrderHistory.jsx:30:24)

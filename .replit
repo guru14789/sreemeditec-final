@@ -1,0 +1,108 @@
+modules = ["nodejs-20", "php-8.2", "web", "nix"]
+run = "npm run dev"
+
+[nix]
+channel = "stable-25_05"
+packages = ["php84Extensions.mongodb", "mongodb", "php82Extensions.mongodb", "jq", "postgresql", "php83Extensions.mongodb"]
+
+[deployment]
+run = ["bash", "-c", "(cd php-backend/public && php -S 0.0.0.0:8000 index.php) & (cd client && npm run preview)"]
+deploymentTarget = "autoscale"
+build = ["bash", "-c", "cd client && npm install && npm run build"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Start PHP Server"
+author = 44398534
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "php -S 0.0.0.0:5000 -t ."
+
+[[workflows.workflow]]
+name = "Start Development Servers"
+author = 21909115
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "php -S 0.0.0.0:5000 -t ."
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Frontend"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Backend"
+
+[[workflows.workflow]]
+name = "Frontend"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd /home/runner/workspace/client && npm run dev"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "Backend"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd /home/runner/workspace/php-backend/public && php -S 0.0.0.0:8000 index.php"
+waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3002
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
+
+[[ports]]
+localPort = 34515
+externalPort = 5000
+
+[[ports]]
+localPort = 37679
+externalPort = 4200
+
+[[ports]]
+localPort = 46777
+externalPort = 3003
+
+[agent]
+expertMode = true
