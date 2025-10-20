@@ -20,6 +20,14 @@ switch (true) {
     case str_starts_with($route, '/shipments') && $method === 'GET':
         handleGetUserShipments();
         break;
+        
+    case preg_match('/^\/shipment\/label\/([a-zA-Z0-9]+)$/', $route, $matches) && $method === 'GET':
+        handleGenerateLabel($matches[1]);
+        break;
+        
+    case preg_match('/^\/shipment\/cancel\/([a-zA-Z0-9]+)$/', $route, $matches) && $method === 'POST':
+        handleCancelShipment($matches[1]);
+        break;
 }
 
 function handleCreateShipment(): void
@@ -120,4 +128,29 @@ function handleGetUserShipments(): void
         'shipments' => $shipments,
         'total' => count($shipments)
     ]);
+}
+
+function handleGenerateLabel(string $referenceNumber): void
+{
+    AuthMiddleware::handle();
+    
+    $shipmentModel = new \Models\Shipment();
+    $result = $shipmentModel->generateLabel($referenceNumber);
+    
+    if ($result['success']) {
+        header('Content-Type: application/json');
+        sendJsonResponse($result, 200);
+    } else {
+        sendJsonResponse($result, 400);
+    }
+}
+
+function handleCancelShipment(string $referenceNumber): void
+{
+    AuthMiddleware::handle();
+    
+    $shipmentModel = new \Models\Shipment();
+    $result = $shipmentModel->cancelShipment($referenceNumber);
+    
+    sendJsonResponse($result, $result['success'] ? 200 : 400);
 }

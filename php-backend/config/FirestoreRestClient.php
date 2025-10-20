@@ -9,6 +9,8 @@ class FirestoreRestClient {
     private $projectId;
     private $accessToken;
     private $baseUrl;
+    private $tokenExpiry;
+    private static $curlHandle = null;
 
     public function __construct($serviceAccountPathOrJson) {
         if (is_array($serviceAccountPathOrJson)) {
@@ -22,6 +24,7 @@ class FirestoreRestClient {
         $this->projectId = $serviceAccount['project_id'];
         $this->baseUrl = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents";
         $this->accessToken = $this->getAccessToken($serviceAccount);
+        $this->tokenExpiry = time() + 3000;
     }
 
     private function getAccessToken($serviceAccount) {
@@ -50,27 +53,39 @@ class FirestoreRestClient {
     }
 
     public function makeRequest($method, $url, $data = null) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        if (self::$curlHandle === null) {
+            self::$curlHandle = curl_init();
+            curl_setopt(self::$curlHandle, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt(self::$curlHandle, CURLOPT_ENCODING, 'gzip');
+            curl_setopt(self::$curlHandle, CURLOPT_TCP_KEEPALIVE, 1);
+            curl_setopt(self::$curlHandle, CURLOPT_TCP_KEEPIDLE, 120);
+            curl_setopt(self::$curlHandle, CURLOPT_TCP_KEEPINTVL, 60);
+            curl_setopt(self::$curlHandle, CURLOPT_TIMEOUT, 10);
+            curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT, 5);
+        }
+        
+        curl_setopt(self::$curlHandle, CURLOPT_URL, $url);
+        curl_setopt(self::$curlHandle, CURLOPT_HTTPHEADER, [
             'Authorization: Bearer ' . $this->accessToken,
-            'Content-Type: application/json'
+            'Content-Type: application/json',
+            'Connection: keep-alive'
         ]);
+        
+        curl_setopt(self::$curlHandle, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt(self::$curlHandle, CURLOPT_POSTFIELDS, null);
 
         if ($method === 'POST') {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt(self::$curlHandle, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt(self::$curlHandle, CURLOPT_POSTFIELDS, json_encode($data));
         } elseif ($method === 'PATCH') {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt(self::$curlHandle, CURLOPT_CUSTOMREQUEST, 'PATCH');
+            curl_setopt(self::$curlHandle, CURLOPT_POSTFIELDS, json_encode($data));
         } elseif ($method === 'DELETE') {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+            curl_setopt(self::$curlHandle, CURLOPT_CUSTOMREQUEST, 'DELETE');
         }
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $response = curl_exec(self::$curlHandle);
+        $httpCode = curl_getinfo(self::$curlHandle, CURLINFO_HTTP_CODE);
 
         if ($httpCode >= 400) {
             error_log("Firestore API error: " . $response);
