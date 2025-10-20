@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { sampleProducts, categories } from '@/data/products';
+import { categories } from '@/data/products';
 import StoreSidebar from '@/components/store/StoreSidebar';
 import StoreFilters from '@/components/store/StoreFilters';
 import ProductCard from '@/components/store/ProductCard';
+import { api } from '@/lib/api';
 
 const Store = () => {
   const [products, setProducts] = useState([]);
@@ -12,11 +13,31 @@ const Store = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('default');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    setProducts(sampleProducts);
-    setFilteredProducts(sampleProducts);
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.getProducts();
+      if (response.success && response.products) {
+        setProducts(response.products);
+        setFilteredProducts(response.products);
+      } else {
+        setError('Failed to load products');
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError(err.message || 'Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let filtered = products;
@@ -100,23 +121,50 @@ const Store = () => {
               productCount={filteredProducts.length}
             />
 
-            {/* Product Grid - Mobile Optimized */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  viewport={{ once: true }}
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-12 sm:py-16 bg-white border rounded-xl shadow-sm">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#448b78] mx-auto mb-4"></div>
+                <p className="text-gray-500 text-base sm:text-lg">Loading products...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12 sm:py-16 bg-white border rounded-xl shadow-sm"
+              >
+                <p className="text-red-500 text-base sm:text-lg mb-4">{error}</p>
+                <button 
+                  onClick={fetchProducts}
+                  className="px-6 py-2 bg-[#448b78] text-white rounded-lg hover:bg-[#357059] transition"
                 >
-                  <ProductCard product={product} index={index} />
-                </motion.div>
-              ))}
-            </div>
+                  Try Again
+                </button>
+              </motion.div>
+            )}
+
+            {/* Product Grid - Mobile Optimized */}
+            {!loading && !error && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    viewport={{ once: true }}
+                  >
+                    <ProductCard product={product} index={index} />
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
             {/* No Products Found */}
-            {filteredProducts.length === 0 && (
+            {!loading && !error && filteredProducts.length === 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
