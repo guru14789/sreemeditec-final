@@ -3,7 +3,7 @@
         'name' => 'sreemeditec/php-mongodb-backend',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '2bda4e4b4335b5ded0bd1a9b77fe6f3dfb6d03cd',
+        'reference' => 'd3065e79183f7c30cba089f8f8e5041089c2e3ce',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -631,7 +631,7 @@
         'sreemeditec/php-mongodb-backend' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '2bda4e4b4335b5ded0bd1a9b77fe6f3dfb6d03cd',
+            'reference' => 'd3065e79183f7c30cba089f8f8e5041089c2e3ce',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
